@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>نشاط (2): رتِّب… ثم صُغ – مصفوفة أيزنهاور</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--m:#89143C;--md:#5E0E29;--gold:#A29160;--teal:#129B82;--navy:#0F4260;--grey:#6B6266;--sand:#F4F1EA;--ink:#231F20;--ok:#129B82;--bad:#C0392B}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:"Tajawal","Sakkal Majalla",Tahoma,sans-serif;background:#F7F5F1;color:var(--ink)}
+.top{height:30px;background:var(--m);position:relative}
+.top::after{content:"";position:absolute;left:50%;bottom:-10px;width:20px;height:20px;background:var(--gold);transform:translateX(-50%) rotate(45deg)}
+.wrap{max-width:1250px;margin:0 auto;padding:16px 18px 40px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{margin:6px 0;font-size:clamp(22px,2.6vw,36px);color:var(--m);flex:1}
+.pill{border:1.5px solid var(--gold);border-radius:999px;padding:6px 14px;font-weight:800;color:var(--m);background:#fff;font-size:16px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.steps span{background:#fff;border-radius:999px;padding:6px 12px;font-size:15px;box-shadow:0 2px 8px #0000000f}
+.steps b{color:var(--m)}
+.game{display:grid;grid-template-columns:330px 1fr;gap:16px}
+@media (max-width:820px){.game{grid-template-columns:1fr}.matrix{grid-template-columns:1fr 1fr;grid-template-rows:auto}.matrix>.ax,.matrix>div:first-child{display:none}.zone{min-height:150px;padding:8px}.card{font-size:15px;padding:8px}.zone h3{font-size:15px}.zone h3 small{font-size:12px}#qrBtn{display:none}}
+.qr{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:80}
+.qr.show{display:flex}
+.qr .box{background:#fff;border-radius:18px;padding:20px;text-align:center;max-width:420px}
+.pool{background:#fff;border-radius:18px;padding:12px;box-shadow:0 4px 16px #00000012;min-height:120px}
+.pool h3,.zone h3{margin:0 0 8px;font-size:17px}
+.pool h3{color:var(--navy)}
+.cards{display:flex;flex-direction:column;gap:8px;min-height:60px}
+.card{background:#FFF8DC;border:2px solid #E8D9A8;border-radius:12px;padding:10px 12px;font-size:17px;line-height:1.5;cursor:grab;user-select:none;touch-action:none;position:relative;transition:transform .15s, box-shadow .15s}
+.card .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:13px;margin-left:6px;font-family:Arial}
+.card.sel{outline:3px solid var(--teal);transform:scale(1.02)}
+.card.drag{opacity:.9;box-shadow:0 12px 28px #0003;position:fixed;z-index:50;pointer-events:none;width:300px}
+.card.ok{background:#E6F6F2;border-color:var(--ok)}
+.card.bad{background:#FBE9E7;border-color:var(--bad)}
+.card .fb{display:none;font-size:14px;margin-top:6px;color:var(--grey)}
+.card.ok .fb,.card.bad .fb{display:block}
+.matrix{display:grid;grid-template-columns:auto 1fr 1fr;grid-template-rows:auto 1fr 1fr;gap:8px}
+.ax{font-weight:800;color:var(--grey);font-size:15px;display:grid;place-items:center;text-align:center}
+.axv{writing-mode:vertical-rl;transform:rotate(180deg)}
+.zone{border-radius:16px;padding:10px;min-height:190px;color:#fff;box-shadow:0 4px 14px #00000014;transition:outline .15s}
+.zone.hover{outline:4px dashed #fff;outline-offset:-8px}
+.zone h3 small{display:block;font-weight:500;opacity:.9;font-size:14px}
+.zone .cards .card{color:var(--ink)}
+.q1{background:var(--m)}.q2{background:var(--navy)}.q3{background:var(--gold)}.q4{background:#8C8486}
+.bar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;padding:12px 22px;font-size:19px;font-weight:800}
+.go{background:linear-gradient(135deg,var(--teal),#0d7a66);color:#fff}
+.m{background:linear-gradient(135deg,var(--m),var(--md));color:#fff}
+.ghost{background:#fff;color:var(--m);border:2px solid var(--m)}
+.score{font-size:22px;font-weight:800;color:var(--navy)}
+.feed{display:none;margin-top:16px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 4px 16px #00000012}
+.feed.show{display:block}
+.feed h2{margin:0 0 6px;color:var(--teal);font-size:22px}
+.f{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin:8px 0}
+.f b{background:var(--teal);color:#fff;border-radius:10px;padding:8px;text-align:center}
+.f textarea{font-family:inherit;font-size:17px;border:2px solid #e3ddd2;border-radius:10px;padding:8px;min-height:52px;resize:vertical}
+.out{background:var(--sand);border-radius:12px;padding:12px;font-size:18px;line-height:1.7;margin-top:8px;min-height:40px}
+.timer{font-family:Arial;font-weight:800;font-size:22px;color:#fff;background:var(--md);border-radius:10px;padding:6px 12px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:12px;display:none;z-index:60}
+.conf{position:fixed;top:-10px;width:10px;height:14px;z-index:70;animation:fall 2.2s linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+<div class="top"></div>
+<div class="wrap">
+  <header>
+    <h1>نشاط (2): رتِّب… ثم صُغ</h1>
+    <span class="timer" id="timer">03:00</span>
+    <span class="pill">فردي ثم ثنائي • تقني تفاعلي</span>
+    <button class="ghost" id="qrBtn" style="padding:8px 14px;font-size:16px">📱 افتح على هاتفك</button>
+  </header>
+  <div class="steps" style="align-items:center">
+    <span><b>اسمك:</b> <input id="who" placeholder="اكتب اسمك" style="font-family:inherit;font-size:16px;border:2px solid #e3ddd2;border-radius:10px;padding:4px 10px;width:160px"></span>
+    <span id="net" style="display:none"></span>
+  </div>
+  <div class="steps">
+    <span><b>1)</b> اسحب كل ملاحظة إلى مربعها (أو اضغط الملاحظة ثم المربع)</span>
+    <span><b>2)</b> اضغط «تحقّق»</span>
+    <span><b>3)</b> صُغ الأهم بنموذج FEED</span>
+  </div>
+  <div class="game">
+    <div class="pool" id="pool"><h3>ملاحظات زيارة صفية (درس بالتعلم التعاوني)</h3><div class="cards" data-zone="0"></div></div>
+    <div class="matrix">
+      <div></div>
+      <div class="ax">عاجل: يحتاج تدخلًا قبل الحصة القادمة</div>
+      <div class="ax">غير عاجل</div>
+      <div class="ax axv">مهم: يؤثر في تعلّم الطلبة</div>
+      <div class="zone q1" data-q="1"><h3>1) مهم وعاجل<small>قدِّمه الآن في جلسة التغذية الراجعة</small></h3><div class="cards" data-zone="1"></div></div>
+      <div class="zone q2" data-q="2"><h3>2) مهم غير عاجل<small>خطِّط له في خطة النمو المهني</small></h3><div class="cards" data-zone="2"></div></div>
+      <div class="ax axv">غير مهم</div>
+      <div class="zone q3" data-q="3"><h3>3) عاجل غير مهم<small>نبِّه بلطف دون جلسة</small></h3><div class="cards" data-zone="3"></div></div>
+      <div class="zone q4" data-q="4"><h3>4) لا مهم ولا عاجل<small>تجاوزه</small></h3><div class="cards" data-zone="4"></div></div>
+    </div>
+  </div>
+  <div class="bar">
+    <button class="go" id="check">✔ تحقّق</button>
+    <button class="ghost" id="reset">↺ إعادة</button>
+    <span class="score" id="score"></span>
+  </div>
+  <div class="feed" id="feed">
+    <h2>3) صُغ ملاحظة «مهم وعاجل» بنموذج FEED</h2>
+    <div class="f"><b>F ركّز</b><textarea id="f1" placeholder="لاحظت أن… (سلوك محدد بحياد)"></textarea></div>
+    <div class="f"><b>E تعاطف</b><textarea id="f2" placeholder="أقدّر… / أعرف أن…"></textarea></div>
+    <div class="f"><b>E عبّر</b><textarea id="f3" placeholder="وهذا أثّر في تعلّم الطلبة لأن…"></textarea></div>
+    <div class="f"><b>D وجّه</b><textarea id="f4" placeholder="ما رأيك أن نجرّب… ويسعدني أن أساعدك"></textarea></div>
+    <div class="bar"><button class="m" id="build">💬 كوِّن رسالتي</button><button class="ghost" id="copy">نسخ</button></div>
+    <div class="out" id="msg"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="qr" id="qr"><div class="box"><h2 style="color:#89143C;margin:0 0 10px">امسح الرمز بكاميرا هاتفك</h2><div id="qrBox" style="display:inline-block"></div><p id="qrUrl" style="direction:ltr;font-size:13px;color:#6B6266;word-break:break-all"></p><button class="m" id="qrClose">تم</button></div></div>
+<script>
+const ITEMS=[
+ {id:1,t:"طالبان يسيطران على النقاش وبقية المجموعة تراقب.",ok:[1],why:"يحرم معظم المجموعة من التعلم الآن ويتكرر كل حصة ← مهم وعاجل."},
+ {id:2,t:"لا توجد معايير نجاح واضحة للنشاط التعاوني.",ok:[1,2],why:"تؤثر مباشرة في جودة التعلم؛ تُقدَّم الآن (أو تُخطَّط إن كان الوقت ضيقًا)."},
+ {id:3,t:"تأخر بدء الحصة دقيقتين.",ok:[3],why:"تنبيه سريع لطيف يكفي ← عاجل غير مهم."},
+ {id:4,t:"الكتابة على السبورة صغيرة في الجهة اليسرى.",ok:[3],why:"تصحيح بسيط فوري دون جلسة ← عاجل غير مهم."},
+ {id:5,t:"أسئلة التقويم الختامي كلها من مستوى التذكّر.",ok:[2],why:"مهمة للتعلم العميق لكنها هدف تطويري ← خطِّط له."},
+ {id:6,t:"طالب لم يُحضر كتابه اليوم.",ok:[4],why:"لا تُثقل المعلم بها ← تجاوزه."}
+];
+const $=(s)=>document.querySelector(s);
+const toast=(t)=>{const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2200)};
+let selected=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function render(){
+  document.querySelectorAll('.cards').forEach(c=>c.innerHTML='');
+  shuffle(ITEMS.slice()).forEach(it=>{
+    const d=document.createElement('div'); d.className='card'; d.dataset.id=it.id;
+    d.innerHTML=`<span class="n">${it.id}</span>${it.t}<div class="fb"></div>`;
+    $('.pool .cards').appendChild(d); bind(d);
+  });
+  $('#score').textContent=''; $('#feed').classList.remove('show');
+}
+function place(card, zoneEl){ zoneEl.appendChild(card); card.classList.remove('ok','bad','sel'); selected=null; $('#score').textContent=''; }
+/* tap to select, tap a zone to place */
+document.querySelectorAll('.zone, .pool').forEach(z=>z.addEventListener('click',e=>{
+  if(!selected || e.target.closest('.card')) return;
+  place(selected, z.querySelector('.cards'));
+}));
+/* pointer drag (mouse + touch) */
+function bind(card){
+  card.addEventListener('pointerdown',e=>{
+    const startX=e.clientX,startY=e.clientY; let ghost=null; let moved=false;
+    card.setPointerCapture(e.pointerId);
+    const move=(ev)=>{
+      if(!moved && Math.hypot(ev.clientX-startX,ev.clientY-startY)<8) return;
+      if(!moved){ moved=true; ghost=card.cloneNode(true); ghost.classList.add('drag'); document.body.appendChild(ghost); card.style.opacity=.35; }
+      ghost.style.left=(ev.clientX-150)+'px'; ghost.style.top=(ev.clientY-25)+'px';
+      document.querySelectorAll('.zone').forEach(z=>z.classList.remove('hover'));
+      const el=document.elementFromPoint(ev.clientX,ev.clientY); const z=el&&el.closest('.zone'); if(z) z.classList.add('hover');
+    };
+    const up=(ev)=>{
+      card.removeEventListener('pointermove',move); card.removeEventListener('pointerup',up); card.removeEventListener('pointercancel',up);
+      document.querySelectorAll('.zone').forEach(z=>z.classList.remove('hover'));
+      if(moved){
+        ghost.remove(); card.style.opacity=1;
+        const el=document.elementFromPoint(ev.clientX,ev.clientY); const z=el&&(el.closest('.zone')||el.closest('.pool'));
+        if(z) place(card, z.querySelector('.cards'));
+      } else {
+        if(selected===card){ card.classList.remove('sel'); selected=null; }
+        else { document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel')); card.classList.add('sel'); selected=card; toast('اضغط المربع المناسب'); }
+      }
+    };
+    card.addEventListener('pointermove',move); card.addEventListener('pointerup',up); card.addEventListener('pointercancel',up);
+  });
+}
+$('#check').onclick=()=>{
+  if($('.pool .cards').children.length){ toast('صنّف كل الملاحظات أولًا ('+$('.pool .cards').children.length+' متبقية)'); return; }
+  let ok=0;
+  document.querySelectorAll('.zone .card').forEach(c=>{
+    const it=ITEMS.find(i=>i.id==c.dataset.id); const q=+c.closest('.zone').dataset.q;
+    const good=it.ok.includes(q); if(good) ok++;
+    c.classList.toggle('ok',good); c.classList.toggle('bad',!good);
+    c.querySelector('.fb').textContent=(good?'✔ ':'✘ ')+it.why;
+  });
+  $('#score').textContent=`نتيجتك: ${ok} من 6`+(ok===6?' 🎉':'');
+  if(ok>=5) confetti();
+  $('#feed').classList.add('show');
+};
+$('#reset').onclick=render;
+$('#build').onclick=()=>{
+  const p=['#f1','#f2','#f3','#f4'].map(s=>$(s).value.trim()).filter(Boolean);
+  // natural order: empathy first, then focus, express, direct
+  const v=[$('#f2').value,$('#f1').value,$('#f3').value,$('#f4').value].map(x=>x.trim()).filter(Boolean);
+  $('#msg').textContent = v.length ? '«'+v.join(' ')+'»' : 'اكتب في المربعات أولًا';
+};
+$('#copy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('#msg').textContent); toast('تم النسخ'); }catch(e){ toast('حدّد النص وانسخه يدويًا'); } };
+function confetti(){ const cols=['#89143C','#A29160','#129B82','#0F4260','#E9DFC4']; for(let i=0;i<70;i++){ const c=document.createElement('div'); c.className='conf'; c.style.left=Math.random()*100+'vw'; c.style.background=cols[i%cols.length]; c.style.animationDelay=(Math.random()*.6)+'s'; document.body.appendChild(c); setTimeout(()=>c.remove(),3000);} }
+/* 3-minute countdown, starts on first interaction */
+let T=180, started=false, iv=null;
+function startTimer(){ if(started) return; started=true; iv=setInterval(()=>{ T--; $('#timer').textContent=String(Math.floor(T/60)).padStart(2,'0')+':'+String(T%60).padStart(2,'0'); if(T<=0){ clearInterval(iv); $('#timer').textContent='انتهى الوقت'; $('#timer').style.background='#C0392B'; } },1000); }
+document.addEventListener('pointerdown',startTimer,{once:true});
+$('#qrBtn').onclick=()=>{
+  if(!/^https?:/.test(location.protocol)){ toast('رمز QR يعمل بعد رفع الصفحة على الإنترنت (Netlify)'); return; }
+  $('#qrBox').innerHTML=''; try{ new QRCode($('#qrBox'),{text:location.origin+location.pathname+'?s='+SESS,width:260,height:260,colorDark:'#5E0E29'}); }catch(e){}
+  $('#qrUrl').textContent=location.origin+location.pathname+'?s='+SESS; $('#qr').classList.add('show');
+};
+$('#qrClose').onclick=()=>$('#qr').classList.remove('show');
+/* ===== live results (Netlify Function + Blobs) ===== */
+const SESS=(new URLSearchParams(location.search).get('s')||'live').toLowerCase().replace(/[^a-z0-9-]/g,'')||'live';
+let MYID; try{ MYID=localStorage.getItem('eisId'); if(!MYID){ MYID=Math.random().toString(36).slice(2,12); localStorage.setItem('eisId',MYID);} }catch(e){ MYID=Math.random().toString(36).slice(2,12); }
+try{ $('#who').value=localStorage.getItem('eisName')||''; }catch(e){}
+$('#who').addEventListener('change',()=>{ try{ localStorage.setItem('eisName',$('#who').value.trim()); }catch(e){} });
+const LIVE = /^https?:/.test(location.protocol);
+let lastScore=0;
+function placements(){ const pl={}; document.querySelectorAll('.zone .card').forEach(c=>{ pl[c.dataset.id]=+c.closest('.zone').dataset.q; }); return pl; }
+async function submit(feed){
+  if(!LIVE) return;
+  try{
+    const r=await fetch('/.netlify/functions/results',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'submit',s:SESS,id:MYID,name:$('#who').value.trim()||'عضو',place:placements(),score:lastScore,feed:feed||''})});
+    const n=$('#net'); n.style.display=''; n.textContent = r.ok ? '📡 وصلت إجابتك إلى لوحة النتائج' : '⚠️ تعذّر الإرسال للوحة'; 
+  }catch(e){ const n=$('#net'); n.style.display=''; n.textContent='⚠️ تعذّر الإرسال للوحة'; }
+}
+const _check=$('#check').onclick;
+$('#check').onclick=()=>{ const before=$('#score').textContent; _check(); const m=$('#score').textContent.match(/(\d+) من 6/); if(m){ lastScore=+m[1]; submit(); } };
+const _build=$('#build').onclick;
+$('#build').onclick=()=>{ _build(); const t=$('#msg').textContent; if(t && !t.startsWith('اكتب')) submit(t); };
+render();
+</script>
+</body>
+</html>

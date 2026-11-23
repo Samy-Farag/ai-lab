@@ -1,0 +1,7 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+  command = "echo ready"
+
+[functions]
+  node_bundler = "esbuild"

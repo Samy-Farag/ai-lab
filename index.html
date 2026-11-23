@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مختبر الذكاء الاصطناعي – تغذية راجعة ببعد إنساني</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --m:#89143C; --md:#5E0E29; --gold:#A29160; --gold2:#C8B88A; --teal:#129B82; --navy:#0F4260; --blue:#4194B3;
+  --ink:#231F20; --grey:#6B6266; --sand:#F4F1EA; --card:#fff; --red:#C0392B;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Tajawal","Sakkal Majalla",Tahoma,sans-serif;color:var(--ink);background:#F7F5F1;
+  background-image:radial-gradient(circle at 15% 20%,#fff 0,transparent 40%),radial-gradient(circle at 85% 80%,#fff 0,transparent 45%);
+  overflow:hidden}
+button{font-family:inherit;cursor:pointer}
+/* template frame */
+.topbar{position:fixed;top:0;left:0;right:0;height:34px;background:var(--m);z-index:5}
+.topbar::after{content:"";position:absolute;left:50%;bottom:-11px;width:22px;height:22px;background:var(--gold);transform:translateX(-50%) rotate(45deg)}
+.footbar{position:fixed;bottom:0;left:0;right:0;height:26px;background:var(--gold);z-index:5}
+.app{position:absolute;inset:34px 0 26px 0;display:flex;flex-direction:column;padding:18px 34px 12px}
+header.h{display:flex;align-items:center;gap:14px;min-height:64px}
+header.h h1{margin:0;font-size:clamp(26px,2.6vw,42px);color:var(--m);font-weight:800;flex:1}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 14px;font-weight:700;font-size:15px;border:1.5px solid var(--gold);background:#fff;color:var(--m)}
+.pill .dot{width:10px;height:10px;border-radius:50%;background:#bbb}
+.pill.on .dot{background:var(--teal);box-shadow:0 0 0 4px #129b8233}
+.pill.off .dot{background:#d9a441}
+.iconbtn{border:none;background:#fff;border:1.5px solid var(--gold);color:var(--m);border-radius:999px;padding:8px 16px;font-weight:700;font-size:15px}
+.iconbtn:hover{background:var(--sand)}
+main{flex:1;min-height:0;position:relative}
+.screen{position:absolute;inset:0;display:none;animation:fadein .5s ease}
+.screen.active{display:flex}
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.card{background:#fff;border-radius:22px;box-shadow:0 6px 22px #00000014;padding:20px}
+/* HOME */
+#home{gap:34px;align-items:stretch;justify-content:center;padding:10px 4vw}
+.choice{flex:1;max-width:560px;display:flex;flex-direction:column;align-items:center;text-align:center;border:none;transition:transform .25s, box-shadow .25s}
+.choice:hover{transform:translateY(-6px);box-shadow:0 14px 34px #0000001f}
+.choice svg{height:min(42vh,330px)}
+.choice h2{margin:10px 0 4px;font-size:clamp(26px,2.4vw,36px);color:var(--m)}
+.choice p{margin:0;color:var(--grey);font-size:clamp(17px,1.4vw,21px);line-height:1.6}
+.choice .tag{margin-top:12px;display:inline-block;background:var(--teal);color:#fff;border-radius:999px;padding:6px 16px;font-weight:700}
+.choice.k .tag{background:var(--m)}
+/* layout for modes */
+.split{gap:22px;width:100%}
+.side{width:31%;min-width:290px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:10px}
+.side .avatar{width:100%;display:flex;justify-content:center}
+.side svg{height:min(46vh,360px);max-width:100%}
+.nameplate{background:var(--m);color:#fff;border-radius:14px;padding:8px 18px;text-align:center;font-weight:800;font-size:22px}
+.nameplate small{display:block;font-weight:500;font-size:15px;opacity:.9}
+.say{position:relative;background:#fff;border-radius:18px;padding:12px 16px;font-size:18px;line-height:1.6;box-shadow:0 4px 14px #00000012;min-height:54px;width:100%;text-align:center;color:var(--navy);font-weight:700}
+.main{flex:1;display:flex;flex-direction:column;gap:14px;min-width:0}
+.label{font-weight:800;color:var(--m);font-size:20px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+textarea{width:100%;font-family:inherit;font-size:20px;line-height:1.6;border:2px solid #e3ddd2;border-radius:14px;padding:12px 14px;resize:none;background:#FFFDF9}
+textarea:focus{outline:none;border-color:var(--gold)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{border:1.5px dashed var(--gold);background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;font-size:15px}
+.chip:hover{background:var(--sand)}
+.mic{width:64px;height:64px;border-radius:50%;border:none;background:var(--m);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px #89143c55;flex:none;position:relative}
+.mic svg{width:28px;height:28px}
+.mic.listening{background:var(--red);animation:pulse 1.2s infinite}
+.mic[disabled]{background:#bbb;box-shadow:none;cursor:not-allowed}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #c0392b88}70%{box-shadow:0 0 0 18px #c0392b00}100%{box-shadow:0 0 0 0 #c0392b00}}
+.go{border:none;background:linear-gradient(135deg,var(--teal),#0d7a66);color:#fff;font-weight:800;font-size:21px;border-radius:14px;padding:12px 26px;box-shadow:0 6px 16px #129b8255}
+.go.m{background:linear-gradient(135deg,var(--m),var(--md));box-shadow:0 6px 16px #89143c55}
+.go.ghost{background:#fff;color:var(--m);border:2px solid var(--m);box-shadow:none}
+.go[disabled]{opacity:.55;cursor:wait}
+.hint{color:var(--grey);font-size:14px}
+/* transform output */
+.out{display:grid;grid-template-columns:1fr 1.35fr;gap:14px;flex:1;min-height:0}
+.before{background:#FBEFF2;border:2px solid #E7B9C6}
+.before .q{font-size:21px;line-height:1.7;color:#7a1033}
+.why{margin-top:10px;font-size:16px;color:var(--grey)}
+.eis{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;max-width:520px}
+.eis div{border-radius:12px;padding:8px 10px;font-size:15px;line-height:1.4;color:#fff;opacity:.28;transition:opacity .6s, transform .6s}
+.eis div b{display:block;font-size:17px}
+.eis div.on{opacity:1;transform:scale(1.04);box-shadow:0 6px 16px #0003;outline:3px solid #E9DFC4}
+.eis .q1{background:var(--m)}.eis .q2{background:var(--navy)}.eis .q3{background:var(--gold)}.eis .q4{background:#8C8486}
+.eisWhy{font-size:16px;color:var(--ink);margin-bottom:12px;line-height:1.6}
+.sbi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.sbi div{background:var(--sand);border-radius:14px;padding:10px 12px;font-size:16px;line-height:1.55}
+.sbi b{display:flex;align-items:center;gap:6px;color:var(--m);font-size:17px;margin-bottom:4px}
+.sbi b span{background:var(--m);color:#fff;border-radius:8px;width:26px;height:26px;display:grid;place-items:center;font-family:Arial;font-size:15px}
+.feed{background:linear-gradient(135deg,#0f8d76,#0b6b5a);color:#fff;border-radius:18px;padding:16px 18px;font-size:21px;line-height:1.75;position:relative}
+.feed .ttl{font-weight:800;color:#E9DFC4;font-size:17px;margin-bottom:4px}
+.keys{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.keys span{background:#fff;color:var(--teal);border-radius:999px;padding:4px 12px;font-weight:700;font-size:15px}
+.empty{display:grid;place-items:center;color:var(--grey);font-size:20px;text-align:center;border:2px dashed #e3ddd2;border-radius:18px;background:#ffffff99}
+.typing{display:inline-flex;gap:6px}
+.typing i{width:10px;height:10px;border-radius:50%;background:var(--gold);animation:bounce 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-8px);opacity:1}}
+/* Khalid chat */
+.chat{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:6px 4px}
+.msg{max-width:78%;padding:11px 16px;border-radius:18px;font-size:20px;line-height:1.6;box-shadow:0 3px 10px #0000000f;animation:fadein .35s}
+.msg.k{align-self:flex-start;background:#fff;border-bottom-right-radius:4px;border-right:5px solid var(--navy)}
+.msg.c{align-self:flex-end;background:var(--m);color:#fff;border-bottom-left-radius:4px}
+.msg .who{display:block;font-size:13px;font-weight:800;opacity:.75;margin-bottom:2px}
+.msg .sig{display:inline-block;margin-top:6px;font-size:13px;background:#129b821a;color:var(--teal);border-radius:999px;padding:2px 10px;font-weight:700}
+.composer{display:flex;gap:10px;align-items:flex-end}
+.composer textarea{height:64px}
+.mood{width:100%}
+.mood .bar{height:16px;border-radius:999px;background:linear-gradient(90deg,#C0392B,#D9A441 50%,#129B82);position:relative}
+.mood .knob{position:absolute;top:50%;width:26px;height:26px;border-radius:50%;background:#fff;border:4px solid var(--navy);transform:translate(50%,-50%);transition:right .9s cubic-bezier(.2,.8,.2,1)}
+.mood .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--grey);margin-top:4px}
+.mood .now{text-align:center;font-weight:800;color:var(--navy);font-size:18px;margin-bottom:6px}
+.turns{font-size:14px;color:var(--grey)}
+/* evaluation overlay */
+.overlay{position:absolute;inset:0;background:#F7F5F1f2;display:none;z-index:4;animation:fadein .4s}
+.overlay.show{display:flex}
+.eval{display:grid;grid-template-columns:300px 1fr 1fr;gap:18px;width:100%;align-content:start}
+.ring{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring svg{width:230px;height:230px}
+.crit{display:flex;flex-direction:column;gap:12px}
+.crit .c{background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 3px 10px #0000000d}
+.crit .c .t{display:flex;justify-content:space-between;font-weight:800;color:var(--navy);font-size:18px}
+.crit .c .b{height:10px;border-radius:999px;background:#eee;margin:6px 0 4px;overflow:hidden}
+.crit .c .b i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--teal));border-radius:999px;transition:width 1.2s ease}
+.crit .c .n{font-size:14px;color:var(--grey)}
+.obs input{width:72px;font-family:inherit;font-size:22px;text-align:center;border:2px solid #e3ddd2;border-radius:12px;padding:6px}
+.cmp{margin-top:12px}
+.cmp .r{display:flex;align-items:center;gap:10px;margin:8px 0;font-weight:700}
+.cmp .r span:first-child{width:130px}
+.cmp .r .b{flex:1;height:22px;background:#eee;border-radius:999px;overflow:hidden}
+.cmp .r .b i{display:block;height:100%;width:0;border-radius:999px;transition:width 1s}
+.toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 20px;border-radius:12px;font-size:16px;z-index:9;display:none}
+/* avatar animations */
+.blink{animation:blink 4.5s infinite;transform-origin:center;transform-box:fill-box}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.float{animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.talking .mouth-open{animation:talk .22s infinite alternate;transform-origin:center;transform-box:fill-box}
+.mouth-open{opacity:0}
+.talking .mouth-open{opacity:1}
+.talking .mouth-rest{opacity:0}
+@keyframes talk{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.eq rect{transform-origin:center;transform-box:fill-box;transform:scaleY(.3)}
+.talking .eq rect{animation:eq .35s infinite alternate}
+.eq rect:nth-child(2){animation-delay:.1s}.eq rect:nth-child(3){animation-delay:.2s}.eq rect:nth-child(4){animation-delay:.05s}.eq rect:nth-child(5){animation-delay:.15s}
+@keyframes eq{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.thinking .eyes-r{animation:look 1.2s infinite alternate}
+@keyframes look{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
+.antenna{animation:glow 1.6s infinite alternate}
+@keyframes glow{from{opacity:.55}to{opacity:1}}
+.brow{transition:transform .8s ease;transform-box:fill-box;transform-origin:center}
+.listen-ring{opacity:0}
+.listening-av .listen-ring{opacity:1;animation:ripple 1.4s infinite}
+@keyframes ripple{from{transform:scale(.9);opacity:.8}to{transform:scale(1.15);opacity:0}}
+body.phone header.h .iconbtn,body.phone #capPill{display:none}
+body.phone .app{padding:12px 14px}
+@media (max-width:700px){ header.h h1{font-size:22px} .pill{font-size:12px;padding:4px 8px} }
+</style>
+</head>
+<body>
+<div class="topbar"></div><div class="footbar"></div>
+<div class="app">
+  <header class="h">
+    <h1 id="title">مختبر الذكاء الاصطناعي</h1>
+    <span class="pill" id="aiPill"><span class="dot"></span><span id="aiTxt">جارٍ الاتصال…</span></span>
+    <span class="pill" id="capPill" title="حالة الإمكانات" style="font-weight:500;font-size:13px"></span>
+    <button class="iconbtn" id="phoneBtn" title="استخدم الهاتف ميكروفونًا لاسلكيًا" style="display:none">📱 ميكروفون الهاتف</button>
+    <button class="iconbtn" id="voiceBtn" title="الأصوات والإعدادات">⚙️ الإعدادات</button>
+    <button class="iconbtn" id="homeBtn" title="الرئيسية">⌂ الرئيسية</button>
+    <button class="iconbtn" id="fsBtn" title="ملء الشاشة">⛶ ملء الشاشة</button>
+  </header>
+  <main>
+    <!-- HOME -->
+    <section class="screen active" id="home">
+      <button class="card choice" data-go="transform">
+        <div id="robotHome"></div>
+        <h2>المحوِّل الذكي</h2>
+        <p>قل الملاحظة بصوتك… فيصنّفها على مصفوفة أيزنهاور، ويصوغها بنموذج FEED، ثم يقرؤها عليك.</p>
+        <span class="tag">مختبر (1) – جماعي</span>
+      </button>
+      <button class="card choice k" data-go="khalid">
+        <div id="khalidHome"></div>
+        <h2>المعلم الافتراضي: أ. خالد</h2>
+        <p>معلم حساس تجاه النقد. حاوره بصوتك كما تحاور معلمًا حقيقيًا… ثم يقيّم الذكاء الاصطناعي حوارك من 10.</p>
+        <span class="tag">مختبر (2) – ثنائي + مراقبون</span>
+      </button>
+    </section>
+
+    <!-- TRANSFORM -->
+    <section class="screen split" id="transform">
+      <div class="side">
+        <div class="avatar" id="robotAv"></div>
+        <div class="nameplate">المحوِّل الذكي<small>مساعدك في صياغة التغذية الراجعة</small></div>
+        <div class="say" id="robotSay">قل لي الملاحظة كما ستقولها للمعلم… وسأريك كيف تصبح بنّاءة.</div>
+      </div>
+      <div class="main">
+        <div class="card">
+          <div class="label">🗣️ النقد كما قيل</div>
+          <div class="composer">
+            <button class="mic" id="micT" title="تحدث"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2z"/></svg></button>
+            <textarea id="critique" placeholder="اضغط الميكروفون وتحدّث… أو اكتب الملاحظة هنا"></textarea>
+            <button class="go" id="goT">✨ حوِّل</button>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <span class="hint">أمثلة سريعة:</span>
+            <button class="chip" data-ex="أداؤك في الحصة غير جيد، والطلاب لم يتفاعلوا.">«أداؤك غير جيد…»</button>
+            <button class="chip" data-ex="أداؤك في الحصة اليوم كان غير جيد، وطريقة شرحك لا تناسب الطلبة. عليك أن تراجع نفسك.">الموقف (أ)</button>
+            <button class="chip" data-ex="يعطيك العافية، مجهود طيب. حاول أن تركز أكثر على الطلاب بشكل عام، استمر.">الموقف (ب)</button>
+            <button class="chip" data-ex="الصف كان فوضى، ونصف الطلاب ما كانوا منتبهين، وأنت ما سيطرت عليهم.">«الصف كان فوضى…»</button>
+          </div>
+        </div>
+        <div class="out" id="tOut">
+          <div class="card before" id="beforeCard"><div class="label" style="color:#7a1033">❌ قبل</div><div class="q" id="beforeQ">—</div><div class="why" id="whyQ"></div></div>
+          <div class="empty" id="afterCard">ستظهر هنا التغذية الراجعة البنّاءة</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KHALID -->
+    <section class="screen split" id="khalid">
+      <div class="side">
+        <div class="avatar" id="khalidAv"></div>
+        <div class="nameplate">أ. خالد<small>معلم – خبرة 12 عامًا</small></div>
+        <div class="mood card" style="padding:12px 16px">
+          <div class="now">مؤشر التقبّل: <span id="moodTxt">دفاعي</span></div>
+          <div class="bar"><div class="knob" id="knob" style="right:20%"></div></div>
+          <div class="lbl"><span>متقبّل</span><span>دفاعي</span></div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0">
+          <div class="row" style="justify-content:space-between">
+            <div class="label">💬 الحوار <span class="turns" id="turns"></span></div>
+            <div class="row">
+              <button class="go ghost" id="resetK">↺ حوار جديد</button>
+              <button class="go m" id="endK">🏁 إنهاء وتقييم</button>
+            </div>
+          </div>
+          <div class="chat" id="chat"></div>
+          <div class="composer" style="margin-top:8px">
+            <button class="mic" id="micK" title="تحدث"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2z"/></svg></button>
+            <textarea id="coord" placeholder="اضغط الميكروفون وتحدّث مع أ. خالد… أو اكتب هنا ثم أرسل"></textarea>
+            <button class="go m" id="sendK">إرسال</button>
+          </div>
+        </div>
+      </div>
+      <!-- evaluation -->
+      <div class="overlay" id="evalOv">
+        <div class="eval">
+          <div class="card ring">
+            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="#eee" stroke-width="12"/><circle id="ringArc" cx="60" cy="60" r="50" fill="none" stroke="url(#rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.4s ease"/><defs><linearGradient id="rg"><stop offset="0" stop-color="#A29160"/><stop offset="1" stop-color="#129B82"/></linearGradient></defs><text x="60" y="58" text-anchor="middle" font-size="30" font-weight="800" fill="#0F4260" font-family="Tajawal" id="ringTxt">0</text><text x="60" y="80" text-anchor="middle" font-size="12" fill="#6B6266" font-family="Tajawal">من 10</text></svg>
+            <div style="font-weight:800;color:var(--m);font-size:20px">تقييم الذكاء الاصطناعي</div>
+            <div class="hint" id="evalMode"></div>
+          </div>
+          <div class="crit" id="crit"></div>
+          <div class="card">
+            <div class="label">⭐ نقطة القوة</div><div id="strength" style="font-size:18px;line-height:1.6"></div>
+            <div class="label" style="margin-top:10px">🎯 نصيحة واحدة</div><div id="advice" style="font-size:18px;line-height:1.6"></div>
+            <div class="label" style="margin-top:14px">👥 تقييم المراقبين (من 10)</div>
+            <div class="row obs"><input type="number" min="0" max="10" step="0.5" placeholder="م1"><input type="number" min="0" max="10" step="0.5" placeholder="م2"><input type="number" min="0" max="10" step="0.5" placeholder="م3"><button class="go" id="cmpBtn" style="padding:8px 18px;font-size:18px">قارن</button></div>
+            <div class="cmp" id="cmp"></div>
+            <div class="row" style="margin-top:10px"><button class="go ghost" id="closeEval">↩ العودة للحوار</button><button class="go m" id="newK">حوار جديد</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- PHONE MIC -->
+    <section class="screen" id="mic" style="flex-direction:column;align-items:center;gap:16px;padding:4px">
+      <div class="row" style="justify-content:center">
+        <button class="go m modeBtn" data-mode="khalid">👨‍🏫 أ. خالد</button>
+        <button class="go ghost modeBtn" data-mode="transform">🤖 المحوِّل</button>
+      </div>
+      <div class="hint" id="pmStatus" style="font-size:16px">جارٍ الاتصال بشاشة العرض…</div>
+      <button class="mic" id="micP" style="width:110px;height:110px;display:none"><svg viewBox="0 0 24 24" fill="currentColor" style="width:48px;height:48px"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2z"/></svg></button>
+      <textarea id="phoneTxt" style="height:34vh;font-size:22px;max-width:680px" placeholder="اضغط زر الميكروفون 🎤 في لوحة مفاتيح هاتفك وتحدّث… ثم «أرسل إلى الشاشة»"></textarea>
+      <button class="go" id="phoneSend" style="width:100%;max-width:680px;font-size:24px;padding:16px">📡 أرسل إلى الشاشة</button>
+      <div class="hint" id="pmLast" style="font-size:16px;max-width:680px;text-align:center"></div>
+    </section>
+  </main>
+</div>
+<div class="overlay" id="vOv" style="position:fixed;inset:0;z-index:8;align-items:center;justify-content:center">
+  <div class="card" style="max-width:560px;width:90%">
+    <div class="label" style="font-size:24px">🔊 أصوات الشخصيات</div>
+    <div class="row" style="margin:8px 0"><b style="width:120px">أ. خالد</b><select id="vs-khalid" style="flex:1;font-family:inherit;font-size:17px;padding:6px;border-radius:10px"></select><button class="go ghost" data-test="khalid" style="padding:6px 14px;font-size:16px">▶ تجربة</button></div>
+    <div class="row" style="margin:8px 0"><b style="width:120px">المحوِّل</b><select id="vs-robot" style="flex:1;font-family:inherit;font-size:17px;padding:6px;border-radius:10px"></select><button class="go ghost" data-test="robot" style="padding:6px 14px;font-size:16px">▶ تجربة</button></div>
+    <div class="hint" id="vsNote" style="font-size:15px;margin:8px 0"></div>
+    <div id="keyBox" style="border-top:1px solid #eee;margin-top:10px;padding-top:10px">
+      <div class="label" style="font-size:19px">🤖 الذكاء الاصطناعي في النسخة المحلية</div>
+      <div class="hint" style="font-size:14px;line-height:1.6;margin-bottom:6px">عند فتح هذا الملف على الجهاز مباشرة (خارج Claude) يحتاج الرد الذكي إلى مفتاح Anthropic API. يُحفظ المفتاح في هذا المتصفح فقط ولا يُكتب داخل الملف. بدون مفتاح يعمل المختبر بالردود الاحتياطية.</div>
+      <div class="row"><input id="apiKey" type="password" placeholder="sk-ant-..." style="flex:1;font-family:monospace;font-size:15px;padding:8px;border:2px solid #e3ddd2;border-radius:10px;direction:ltr">
+      <select id="apiModel" style="font-family:inherit;font-size:15px;padding:7px;border-radius:10px"><option value="claude-sonnet-5-5">Sonnet 5.5 (أدق)</option><option value="claude-haiku-5-5">Haiku 5.5 (أسرع)</option></select></div>
+      <div class="row" style="margin-top:8px"><button class="go" id="keySave" style="padding:7px 16px;font-size:16px">حفظ واختبار</button><button class="go ghost" id="keyClear" style="padding:7px 16px;font-size:16px">مسح المفتاح</button><span class="hint" id="keyMsg"></span></div>
+    </div>
+    <button class="go m" id="vClose" style="margin-top:12px">تم</button>
+  </div>
+</div>
+<div class="overlay" id="qrOv" style="position:fixed;inset:0;z-index:8;align-items:center;justify-content:center">
+  <div class="card" style="text-align:center;max-width:520px">
+    <div class="label" style="justify-content:center;font-size:24px">📱 حوّل هاتفك إلى ميكروفون لاسلكي</div>
+    <div id="qrBox" style="display:inline-block;padding:14px;background:#fff;border-radius:14px"></div>
+    <p style="font-size:17px;line-height:1.7;margin:10px 0">امسح الرمز بهاتفك، فتفتح الصفحة نفسها على الهاتف وتتحول تلقائيًا إلى وضع الميكروفون. إن فتح تطبيق Claude محادثة، اضغط بطاقة «مختبر الذكاء الاصطناعي» داخلها. ثم مرّر الهاتف لعضو اللجنة: يضغط ميكروفون لوحة المفاتيح ويتحدث، ثم «أرسل إلى الشاشة».</p>
+    <div class="hint" style="direction:ltr">https://claude.ai/artifact/1mQEnqRDNb4o8qVyHeCETu</div>
+    <div class="hint" id="peerInfo"></div>
+    <button class="go m" id="qrClose" style="margin-top:10px">تم</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= avatars ================= */
+const ROBOT = (id)=>`
+<svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg" class="float" id="${id}">
+  <circle class="listen-ring" cx="150" cy="135" r="120" fill="none" stroke="#C0392B" stroke-width="4"/>
+  <line x1="150" y1="40" x2="150" y2="70" stroke="#A29160" stroke-width="6" stroke-linecap="round"/>
+  <circle class="antenna" cx="150" cy="34" r="12" fill="#A29160"/>
+  <rect x="60" y="68" width="180" height="150" rx="44" fill="#fff" stroke="#89143C" stroke-width="6"/>
+  <circle cx="54" cy="143" r="14" fill="#89143C"/><circle cx="246" cy="143" r="14" fill="#89143C"/>
+  <rect x="80" y="88" width="140" height="110" rx="30" fill="#0F4260"/>
+  <g class="eyes-r"><rect class="blink" x="106" y="112" width="22" height="30" rx="11" fill="#5EEAD4"/><rect class="blink" x="172" y="112" width="22" height="30" rx="11" fill="#5EEAD4"/></g>
+  <g class="eq" transform="translate(118 160)"><rect x="0" y="0" width="8" height="22" rx="4" fill="#5EEAD4"/><rect x="14" y="0" width="8" height="22" rx="4" fill="#5EEAD4"/><rect x="28" y="0" width="8" height="22" rx="4" fill="#5EEAD4"/><rect x="42" y="0" width="8" height="22" rx="4" fill="#5EEAD4"/><rect x="56" y="0" width="8" height="22" rx="4" fill="#5EEAD4"/></g>
+  <rect x="132" y="218" width="36" height="16" fill="#C8B88A"/>
+  <rect x="78" y="232" width="144" height="96" rx="34" fill="#89143C"/>
+  <path d="M150 300 C125 282 116 266 126 256 C134 248 146 252 150 260 C154 252 166 248 174 256 C184 266 175 282 150 300Z" fill="#E9DFC4"/>
+  <circle cx="104" cy="262" r="6" fill="#C8B88A"/><circle cx="196" cy="262" r="6" fill="#C8B88A"/>
+</svg>`;
+
+const KHALID = (id)=>`
+<svg viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg" id="${id}">
+  <circle class="listen-ring" cx="150" cy="150" r="128" fill="none" stroke="#C0392B" stroke-width="4"/>
+  <!-- thobe -->
+  <path d="M40 360 C44 290 70 262 112 250 L188 250 C230 262 256 290 260 360 Z" fill="#FAFAFA" stroke="#D5D5D5" stroke-width="3"/>
+  <path d="M150 262 L150 360" stroke="#E2E2E2" stroke-width="3"/>
+  <circle cx="150" cy="282" r="4" fill="#D0D0D0"/><circle cx="150" cy="306" r="4" fill="#D0D0D0"/>
+  <!-- ghutra back drape -->
+  <path d="M92 110 C80 170 70 230 58 300 C90 296 108 284 118 262 L182 262 C192 284 210 296 242 300 C230 230 220 170 208 110 Z" fill="#FFFFFF" stroke="#DADADA" stroke-width="3"/>
+  <!-- neck -->
+  <rect x="130" y="212" width="40" height="44" rx="10" fill="#C98F66"/>
+  <path d="M120 250 L150 270 L180 250" fill="none" stroke="#D5D5D5" stroke-width="4"/>
+  <!-- face -->
+  <ellipse cx="150" cy="158" rx="50" ry="62" fill="#D9A07A"/>
+  <!-- beard -->
+  <path d="M101 160 C102 205 124 228 150 230 C176 228 198 205 199 160 C192 182 182 196 168 200 C160 192 140 192 132 200 C118 196 108 182 101 160 Z" fill="#2B211B"/>
+  <!-- mouth -->
+  <g id="${id}-mouth">
+    <path class="mouth-rest" id="${id}-mrest" d="M136 202 Q150 204 164 202" stroke="#7A2E2E" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <ellipse class="mouth-open" cx="150" cy="203" rx="11" ry="7" fill="#5A1F1F"/>
+  </g>
+  <!-- moustache -->
+  <path d="M126 192 C136 184 146 186 150 190 C154 186 164 184 174 192 C164 194 156 196 150 195 C144 196 136 194 126 192 Z" fill="#2B211B"/>
+  <!-- nose -->
+  <path d="M150 150 C146 166 142 174 146 178 C149 180 153 180 156 177" fill="none" stroke="#A86F4E" stroke-width="3" stroke-linecap="round"/>
+  <!-- eyes -->
+  <g><ellipse class="blink" cx="130" cy="146" rx="7" ry="8" fill="#2A1C14"/><ellipse class="blink" cx="170" cy="146" rx="7" ry="8" fill="#2A1C14"/>
+  <circle cx="132" cy="143" r="2" fill="#fff"/><circle cx="172" cy="143" r="2" fill="#fff"/></g>
+  <!-- brows -->
+  <path class="brow" id="${id}-bl" d="M116 130 Q128 124 140 129" stroke="#2B211B" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path class="brow" id="${id}-br" d="M160 129 Q172 124 184 130" stroke="#2B211B" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- ghutra front -->
+  <path d="M92 150 C88 92 116 66 150 66 C184 66 212 92 208 150 C204 128 196 112 184 106 C170 100 130 100 116 106 C104 112 96 128 92 150 Z" fill="#FFFFFF" stroke="#DADADA" stroke-width="3"/>
+  <path d="M92 150 C90 180 94 214 100 236 C96 200 98 170 104 140 Z" fill="#FFFFFF" stroke="#DADADA" stroke-width="2"/>
+  <path d="M208 150 C210 180 206 214 200 236 C204 200 202 170 196 140 Z" fill="#FFFFFF" stroke="#DADADA" stroke-width="2"/>
+  <path d="M112 104 Q150 94 188 104" stroke="#E6E6E6" stroke-width="3" fill="none"/>
+  <!-- agal -->
+  <ellipse cx="150" cy="82" rx="58" ry="14" fill="none" stroke="#151515" stroke-width="8"/>
+  <ellipse cx="150" cy="72" rx="54" ry="12" fill="none" stroke="#151515" stroke-width="7"/>
+</svg>`;
+
+document.getElementById('robotHome').innerHTML = ROBOT('rH');
+document.getElementById('khalidHome').innerHTML = KHALID('kH');
+document.getElementById('robotAv').innerHTML = ROBOT('rA');
+document.getElementById('khalidAv').innerHTML = KHALID('kA');
+const $ = (id)=>document.getElementById(id);
+
+function setBrows(mood){ // 0 defensive .. 100 accepting
+  const t = (50 - mood)/50; // +1 angry, -1 happy
+  $('kA-bl').style.transform = `rotate(${t*12}deg) translateY(${t*2}px)`;
+  $('kA-br').style.transform = `rotate(${-t*12}deg) translateY(${t*2}px)`;
+  const y = 202 + (mood-50)/50*-6; // smile: corners up
+  const c = 202 - (mood-50)/50*-8;
+  $('kA-mrest').setAttribute('d', `M136 ${y.toFixed(1)} Q150 ${(202 + (mood-50)/50*8).toFixed(1)} 164 ${y.toFixed(1)}`);
+}
+
+/* ================= capabilities ================= */
+let SAMPLE=null, TTS=null, DICT=null, ACTIVE=null, ROOM=null;
+var API_KEY='', API_MODEL='claude-sonnet-5-5';
+try{ API_KEY=localStorage.getItem('anthropicKey')||''; API_MODEL=localStorage.getItem('anthropicModel')||API_MODEL; }catch(e){}
+const APP_URL='https://claude.ai/artifact/1mQEnqRDNb4o8qVyHeCETu';
+function showCaps(){
+  const SR=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  $('capPill').innerHTML = `🎙 ${DICT?'✓':(SR?'~':'✗')} &nbsp; 🔊 ${TTS?'✓':('speechSynthesis' in window?'~':'✗')} &nbsp; 🤖 ${SAMPLE?'✓':'✗'} &nbsp; 📱 ${ROOM?'✓':'✗'}`;
+}
+const toast=(t,ms=2600)=>{const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms)};
+function setAI(on){ if(!on && API_KEY){ on='key'; } if(!on && typeof SERVER!=='undefined' && SERVER){ on='server'; } const p=$('aiPill'); p.className='pill '+(on?'on':'off'); $('aiTxt').textContent = on==='key'?'متصل بالذكاء الاصطناعي (مفتاح)':(on==='server'?'متصل بالذكاء الاصطناعي':(on?'متصل بالذكاء الاصطناعي':'وضع احتياطي (دون اتصال)')); }
+(async()=>{
+  try{
+    const c = window.claude;
+    if(!c||!c.use){ setAI(false); return; }
+    const [s,t,d,rm] = await Promise.all([c.use('sample'),c.use('tts'),c.use('dictation'),c.use('room')]);
+    SAMPLE=s; TTS=t; DICT=d; ROOM=rm; setAI(!!s); showCaps();
+    if(ROOM && !(window.SpeechRecognition||window.webkitSpeechRecognition) ) $('phoneBtn').style.display='';
+    if(ROOM && DICT===null) $('phoneBtn').style.display='';
+    if(ROOM) initRoom();
+    if(DICT){
+      DICT.onPartial(({text})=>ACTIVE&&ACTIVE.partial(text));
+      DICT.onFinal(({text})=>ACTIVE&&ACTIVE.final(text));
+      DICT.onState(({state})=>{ if(state==='idle') ACTIVE&&ACTIVE.idle(); });
+    }
+    if(TTS){ TTS.onState(({state})=>{ document.querySelectorAll('.speaking-target').forEach(el=>el.classList.toggle('talking', state==='speaking')); }); }
+  }catch(e){ setAI(false); }
+})();
+setTimeout(()=>{ if($('aiTxt').textContent.startsWith('جارٍ')) setAI(false); showCaps(); }, 11000);
+
+/* ================= voice out ================= */
+let speakingEl=null;
+function markTalking(el,on){ if(el) el.classList.toggle('talking',on); }
+/* Gulf male voices (Microsoft Edge natural voices): Qatar, Kuwait, UAE, Bahrain, Oman, Saudi */
+const GULF_MALE=[/moaz/i,/fahed/i,/hamdan/i,/\bali\b/i,/abdullah/i,/hamed/i];
+const ANY_MALE=/moaz|fahed|hamdan|\bali\b|abdullah|hamed|shakir|taim|rami|laith|saleh|bassel|omar|ismael|jamal|hedi|naayf|male/i;
+let VOICE_PREF={};
+try{ VOICE_PREF=JSON.parse(localStorage.getItem('voicePref')||'{}'); }catch(e){}
+function arVoices(){ try{ return speechSynthesis.getVoices().filter(v=>/^ar/i.test(v.lang)); }catch(e){ return []; } }
+function pickVoice(who){
+  const vs=arVoices(); if(!vs.length) return null;
+  const chosen=VOICE_PREF[who]; if(chosen==='claude') return 'claude';
+  if(chosen){ const v=vs.find(v=>v.name===chosen); if(v) return v; }
+  const gulf=[]; GULF_MALE.forEach(rx=>{ const v=vs.find(v=>rx.test(v.name)); if(v && !gulf.includes(v)) gulf.push(v); });
+  if(gulf.length){ return who==='khalid' ? gulf[0] : (gulf[1]||gulf[0]); }
+  return vs.find(v=>ANY_MALE.test(v.name)) || null;
+}
+function voicesReady(){
+  return new Promise(res=>{
+    try{
+      if(speechSynthesis.getVoices().length) return res();
+      const t=setTimeout(res,1500);
+      speechSynthesis.addEventListener('voiceschanged',()=>{ clearTimeout(t); res(); },{once:true});
+    }catch(e){ res(); }
+  });
+}
+function chunks(text){
+  const parts=String(text).replace(/\s+/g,' ').split(/(?<=[.!؟?،…])\s+/); const out=[]; let cur='';
+  for(const p of parts){ if((cur+' '+p).length>180 && cur){ out.push(cur); cur=p; } else cur=(cur?cur+' ':'')+p; }
+  if(cur) out.push(cur); return out.length?out:[String(text)];
+}
+function browserSpeak(text, who, v, av){
+  return new Promise(res=>{
+    let done=false; const fin=()=>{ if(done) return; done=true; markTalking(av,false); res(); };
+    try{
+      speechSynthesis.cancel();
+      const parts=chunks(text);
+      parts.forEach((t,i)=>{
+        const u=new SpeechSynthesisUtterance(t);
+        if(v){ u.voice=v; u.lang=v.lang; } else u.lang='ar-QA';
+        u.rate=1.0; u.pitch=(who==='robot' && v && pickVoice('khalid')===v)?1.12:1.0;
+        u.onstart=()=>markTalking(av,true);
+        if(i===parts.length-1){ u.onend=fin; }
+        u.onerror=fin;
+        speechSynthesis.speak(u);
+      });
+      markTalking(av,true);
+      setTimeout(fin, Math.min(60000, 4000 + String(text).length*120));
+    }catch(e){ fin(); }
+  });
+}
+async function speak(text, who){
+  stopAllMics(); SPEAKING=true;
+  try{ return await speakInner(text, who); } finally { SPEAKING=false; }
+}
+async function speakInner(text, who){
+  const av = who==='khalid' ? $('kA') : $('rA');
+  document.querySelectorAll('svg').forEach(s=>s.classList.remove('speaking-target','talking'));
+  av.classList.add('speaking-target');
+  const hasSS = 'speechSynthesis' in window;
+  if(hasSS) await voicesReady();
+  const v = hasSS ? pickVoice(who) : null;
+  if(v && v!=='claude') return browserSpeak(text, who, v, av);
+  if(TTS){
+    try{ markTalking(av,true); await TTS.speak(text,{voice: who==='khalid'?'rounded':'glassy'}); markTalking(av,false); return; }
+    catch(e){ markTalking(av,false); }
+  }
+  if(hasSS){ const any=arVoices()[0]||null; return browserSpeak(text, who, any, av); }
+}
+if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{ fillVoiceUI&&fillVoiceUI(); }; }catch(e){} }
+
+/* voice settings */
+function fillVoiceUI(){
+  const vs=arVoices();
+  ['khalid','robot'].forEach(who=>{
+    const sel=$('vs-'+who); if(!sel) return;
+    const cur=pickVoice(who);
+    sel.innerHTML = vs.map(v=>`<option value="${esc(v.name)}" ${cur&&cur.name===v.name?'selected':''}>${esc(v.name.replace(/^Microsoft\s*/,'').replace(/\s*Online.*?-\s*/,' – '))}</option>`).join('')
+      + `<option value="claude" ${cur==='claude'||(!cur)?'selected':''}>صوت Claude</option>`;
+  });
+  $('vsNote').textContent = vs.some(v=>/moaz/i.test(v.name)) ? '✅ صوت «معاذ» القطري متاح على هذا الجهاز' : (vs.length? 'ℹ️ صوت «معاذ» القطري غير ظاهر — استخدم متصفح Microsoft Edge للحصول على الأصوات الخليجية' : '⚠️ لا توجد أصوات عربية في هذا المتصفح — استخدم Microsoft Edge');
+}
+
+/* ================= voice in ================= */
+let SPEAKING=false; const MICS=[];
+function makeMic(btn, ta, onDone, avId){
+  let listening=false, base='', rec=null, sess=0, captured='', silenceT=null, finalTxt='', interimTxt='';
+  const setUI=(on)=>{ listening=on; btn.classList.toggle('listening',on); $(avId).classList.toggle('listening-av',on); };
+  let heard=false;
+  // before the first words: wait up to 10 s; after words: send after 2.2 s of silence
+  const armSilence=()=>{ clearTimeout(silenceT); silenceT=setTimeout(()=>{ if(listening){ if(heard) finish(true); else { finish(false); toast('لم أسمع شيئًا… اضغط الميكروفون وتحدث'); } } }, heard?2200:10000); };
+  function finish(send){
+    if(!listening) return;
+    const my=sess; sess++;              // ignore anything that arrives later
+    clearTimeout(silenceT);
+    const text=(base+finalTxt+' '+interimTxt).replace(/\s+/g,' ').trim();
+    setUI(false); ACTIVE=null;
+    if(rec){ try{ rec.onresult=null; rec.onend=null; rec.onerror=null; rec.abort(); }catch(e){} rec=null; }
+    if(DICT){ try{ DICT.stop(); }catch(e){} }
+    ta.value=text;
+    if(send && text && onDone) onDone();
+  }
+  btn.addEventListener('click', ()=>{
+    if(listening){ finish(true); return; }
+    if(SPEAKING){ try{ TTS&&TTS.stop(); }catch(e){} try{ speechSynthesis.cancel(); }catch(e){} SPEAKING=false; }
+    base = ta.value ? ta.value.trim()+' ' : ''; finalTxt=''; interimTxt=''; heard=false;
+    const my=++sess;
+    if(DICT){
+      let p;
+      try{ p = DICT.start(); }catch(e){ p=Promise.reject(e); }
+      ACTIVE = ctl; setUI(true); armSilence();
+      p.catch(e=>{ setUI(false); ACTIVE=null; toast('تعذّر تشغيل ميكروفون الجهاز ('+((e&&(e.code||e.message))||'?')+') — افتح ملف AI-Lab.html في Edge',5000); });
+      return;
+    }
+    const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ toast('الإدخال الصوتي غير متاح هنا — افتح ملف AI-Lab.html في Edge',5000); ta.focus(); return; }
+    try{
+      rec = new SR(); rec.lang='ar-QA'; rec.interimResults=true; rec.continuous=true;
+      rec.onresult=(ev)=>{
+        if(my!==sess || !listening || SPEAKING) return;
+        let fin='',int=''; for(const r of ev.results){ if(r.isFinal) fin+=r[0].transcript+' '; else int+=r[0].transcript; }
+        finalTxt=fin; interimTxt=int; ta.value = (base + fin + int);
+        if((fin+int).trim()) heard=true;
+        armSilence();
+      };
+      rec.onerror=(ev)=>{ if(my!==sess) return; if(ev && (ev.error==='no-speech'||ev.error==='aborted')) return; finish(false); toast('تعذّر الإدخال الصوتي ('+(ev&&ev.error||'?')+') — تأكد من السماح بالميكروفون في Edge',5000); };
+      rec.onend=()=>{ if(my!==sess || !listening) return; if(heard) finish(true); else { try{ rec.start(); }catch(e){ finish(false); } } };
+      rec.start(); setUI(true); armSilence();
+    }catch(e){ setUI(false); toast('الإدخال الصوتي غير متاح — افتح ملف AI-Lab.html في Edge',5000); }
+  });
+  const ctl = {
+    partial:(t)=>{ if(listening && !SPEAKING){ if(t&&t.trim()) heard=true; interimTxt=t; ta.value = base + finalTxt + t; armSilence(); } },
+    final:(t)=>{ if(listening && !SPEAKING){ heard=true; finalTxt += t + ' '; interimTxt=''; ta.value = base + finalTxt; armSilence(); } },
+    idle:()=>{ if(listening) finish(true); },
+    stop:()=>finish(false), get listening(){return listening}
+  };
+  MICS.push(ctl);
+  return ctl;
+}
+function stopAllMics(){ MICS.forEach(m=>{ if(m.listening) m.stop(); }); }
+
+/* ================= navigation ================= */
+const TITLES={home:'مختبر الذكاء الاصطناعي',transform:'مختبر (1): المحوِّل الذكي',khalid:'مختبر (2): المعلم الافتراضي أ. خالد',mic:'📱 الميكروفون اللاسلكي'};
+function go(name){
+  if(!TITLES[name]) name='home';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===name));
+  $('title').textContent=TITLES[name];
+  if(location.hash.slice(1)!==name) history.replaceState(null,'','#'+name);
+  if(name==='khalid' && !K.started) startKhalid();
+  document.body.classList.toggle('phone', name==='mic');
+  if(ROOM && name!=='mic'){ ROOM.presence({screen:name}).catch(()=>{}); }
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+$('homeBtn').onclick=()=>go('home');
+$('fsBtn').onclick=async()=>{ try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(e){ toast('اضغط F11 لملء الشاشة'); } };
+window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
+
+/* ================= JSON helper ================= */
+function parseJSON(t){ if(typeof t!=='string') return t; const m=t.match(/\{[\s\S]*\}/); return JSON.parse(m?m[0]:t); }
+async function callAPI(prompt, maxTok=800){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:API_MODEL,max_tokens:maxTok,messages:[{role:'user',content:prompt}]})});
+  if(!r.ok){ let m=''; try{ m=(await r.json()).error.message; }catch(_){} throw new Error('API '+r.status+' '+m); }
+  const j=await r.json(); return parseJSON((j.content||[]).map(c=>c.text||'').join(''));
+}
+/* site server (Netlify Function): the API key stays on the server, never in the page */
+const SERVER_URL='/.netlify/functions/claude';
+var SERVER=false;
+async function askServer(srv){
+  const r=await fetch(SERVER_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(srv)});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error||('server '+r.status));
+  return parseJSON(j.text);
+}
+(async()=>{
+  if(!/^https?:/.test(location.protocol) || /claude\.ai|claudeusercontent/.test(location.hostname)) return;
+  try{
+    const r=await fetch(SERVER_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind:'ping'})});
+    const j=await r.json(); if(r.ok && j.ok && j.configured){ SERVER=true; if(!SAMPLE) setAI('server'); }
+  }catch(e){}
+})();
+async function ask(prompt, srv){
+  if(!SAMPLE){
+    if(API_KEY){ try{ return await callAPI(prompt); }catch(e){ toast('تعذّر الاتصال بالذكاء الاصطناعي: '+e.message,5000); if(!SERVER) throw e; } }
+    if(SERVER && srv){ try{ return await askServer(srv); }catch(e){ toast('تعذّر الاتصال بخادم الذكاء الاصطناعي: '+e.message,5000); throw e; } }
+    throw new Error('offline');
+  }
+  try{ return await SAMPLE.json(prompt,{cache:false}); }
+  catch(e){
+    if(e && e.code==='not_granted'){ SAMPLE=null; setAI(false); }
+    if(e && e.text){ try{return parseJSON(e.text);}catch(_){ } }
+    try{ const r = await SAMPLE(prompt,{cache:false}); return parseJSON(r.text); }catch(e2){ throw e2; }
+  }
+}
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= MODE 1: transform ================= */
+const CANNED = {
+ 'أداؤك في الحصة غير جيد، والطلاب لم يتفاعلوا.':{q:1,decision:'قدِّمها الآن',reason:'ضعف المشاركة يؤثر مباشرة في تعلّم الطلبة ويتكرر في كل حصة، فيحتاج تدخلًا قبل الحصة القادمة.',feed:'أعجبني وضوح عرضك وتنظيمك لوقت الحصة، وأقدّر أن هذا الصف يحتاج جهدًا خاصًا. لاحظتُ أن المشاركة اقتصرت على عدد قليل من الطلبة، وهذا قد يحرم الآخرين من التعلم النشط. ما رأيك أن نجرّب معًا استراتيجية فكّر، زاوج، شارك في الحصة القادمة؟ يسعدني أن أساعدك في تصميمها.',spoken:'يعطيك العافية أستاذ، عجبني وضوح شرحك وتنظيمك لوقت الحصة، وأدري إن هالصف يبيله جهد. بس لاحظت إن المشاركة كانت من كم طالب بس، والباقين فاتتهم فرصة يتفاعلون. وش رايك نجرب سوا استراتيجية فكّر، زاوج، شارك في الحصة الياية؟ وأنا حاضر أساعدك.',keys:['التعاطف','تحديد السلوك','عرض المساعدة'],why:'حكم عام يمسّ المعلم ولا يحدد سلوكًا ولا يقترح حلًا.'},
+};
+function offlineTransform(note){
+  const c = CANNED[note.trim()]; if(c) return c;
+  const q = /(سلام|خطر|طلاب|طلبة|تفاعل|مشارك|فهم|فوضى|ضبط)/.test(note) ? 1 : /(تخطيط|تقويم|أسئلة|استراتيج|تمايز)/.test(note) ? 2 : /(سبورة|تأخر|خط|ترتيب|وقت)/.test(note) ? 3 : 2;
+  return {q, decision:['','قدِّمها الآن','خطِّط لها','نبِّه بلطف','تجاوزها'][q], reason:'تصنيف تقريبي في الوضع الاحتياطي حسب أثر الملاحظة على تعلّم الطلبة وإلحاحها.',
+    feed:'أقدّر جهدك واهتمامك بطلابك، وواضح أنك حضّرت للحصة جيدًا. لاحظتُ موقفًا أثّر في مشاركة بعض الطلبة، وأظن أن تعديلًا بسيطًا قد يصنع فرقًا كبيرًا. ما رأيك أن نختار معًا استراتيجية واحدة نجرّبها في الحصة القادمة؟ أنا معك إن احتجت أي دعم.',
+    keys:['التعاطف','فصل السلوك عن الشخص','عرض المساعدة'], why:'الصياغة الأصلية تحكم على الشخص بدل وصف السلوك، ولا تقدم خطوة عملية.'};
+}
+const T_PROMPT=(note)=>`أنت «المحوِّل الذكي»، مستشار تربوي خبير في القيادة المدرسية والذكاء العاطفي في مدارس دولة قطر.
+مهمتك: (1) تصنيف ملاحظة المنسق على مصفوفة أيزنهاور حيث الأهمية = أثرها على تعلّم الطلبة، والإلحاح = حاجتها لتدخل قبل الحصة القادمة؛ (2) تحويل ملاحظة قالها منسق لمعلم بعد زيارة صفية (قد تكون نقدًا قاسيًا أو عامة أو باللهجة العامية) إلى تغذية راجعة بنّاءة ببُعد إنساني.
+القواعد:
+- عربية فصحى سهلة ودافئة تُقرأ بصوت عالٍ، بلا رموز أو تنسيق.
+- لا تذكر أسماء أشخاص. لا تخترع تفاصيل دقيقة غير موجودة؛ إن احتجت تفصيلًا فاجعله عامًا ومعقولًا.
+- الرسالة المنطوقة (feed) بين 55 و80 كلمة: تبدأ بنقطة قوة حقيقية، ثم تصف سلوكًا محددًا بحياد، ثم أثره على تعلّم الطلبة، ثم تقترح خطوة عملية واحدة وتعرض المساعدة، وتنتهي بسؤال تشاركي.
+- إن لم تكن الملاحظة متعلقة بالتدريس فحوّلها بأفضل ما يمكن في سياق تربوي.
+أعد JSON فقط بهذا الشكل دون أي نص آخر:
+{"q":رقم المربع في مصفوفة أيزنهاور (1 = مهم وعاجل، 2 = مهم غير عاجل، 3 = عاجل غير مهم، 4 = غير مهم ولا عاجل),"decision":"قدِّمها الآن | خطِّط لها | نبِّه بلطف | تجاوزها","reason":"جملة واحدة تبرر التصنيف","feed":"الرسالة كاملة بالفصحى","spoken":"الرسالة نفسها بلهجة خليجية قطرية مهذبة ودافئة كما يقولها منسق قطري لزميله، بلا رموز","keys":["مفتاح ذكاء عاطفي مستخدم","…"],"why":"جملة واحدة: لماذا كانت الصياغة الأصلية مؤذية أو غير مفيدة"}
+
+الملاحظة الأصلية: «${note}»`;
+
+const micT = makeMic($('micT'), $('critique'), ()=>{ if($('critique').value.trim()) transform(); }, 'rA');
+document.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{ $('critique').value=b.dataset.ex; transform(); });
+$('goT').onclick=()=>transform();
+let tBusy=false;
+async function transform(){
+  const note=$('critique').value.trim();
+  if(!note){ toast('قل الملاحظة أو اكتبها أولًا'); return; }
+  if(tBusy) return; tBusy=true; $('goT').disabled=true;
+  $('beforeQ').textContent='«'+note+'»'; $('whyQ').textContent='';
+  const after=$('afterCard'); after.className='empty'; after.innerHTML='<div><div class="typing"><i></i><i></i><i></i></div><div style="margin-top:10px">المحوِّل يعيد الصياغة…</div></div>';
+  $('rA').classList.add('thinking'); $('robotSay').textContent='لحظة… أبحث عن نقطة القوة أولًا 🤔';
+  let r, offline=false;
+  try{ r = await ask(T_PROMPT(note), {kind:'transform', data:{note}}); if(!r||!r.feed) throw new Error('bad'); }
+  catch(e){ r = offlineTransform(note); offline=true; }
+  $('rA').classList.remove('thinking');
+  $('whyQ').textContent = r.why ? '⚠️ '+r.why : '';
+  after.className='card'; after.style.cssText='overflow:auto';
+  after.innerHTML = `<div class="label" style="color:var(--teal)">✅ بعد ${offline?'<span class="hint">(نموذج احتياطي)</span>':''}</div>
+   <div class="label" style="font-size:17px;margin-bottom:4px">🧭 مصفوفة أيزنهاور: ${esc(r.decision||'')}</div>
+   <div class="eis"><div class="q1 ${+r.q===1?'on':''}"><b>1) مهم وعاجل</b>قدِّمها الآن</div><div class="q2 ${+r.q===2?'on':''}"><b>2) مهم غير عاجل</b>خطِّط لها</div><div class="q3 ${+r.q===3?'on':''}"><b>3) عاجل غير مهم</b>نبِّه بلطف</div><div class="q4 ${+r.q===4?'on':''}"><b>4) لا مهم ولا عاجل</b>تجاوزها</div></div>
+   <div class="eisWhy">${esc(r.reason||'')}</div>
+   <div class="feed"><div class="ttl">💬 الرسالة كما تُقال للمعلم (FEED)</div>${esc(r.feed)}
+   <div class="keys">${(r.keys||[]).map(k=>'<span>'+esc(k)+'</span>').join('')}</div></div>
+   <div class="row" style="margin-top:10px"><button class="go ghost" id="replay" style="padding:8px 18px;font-size:17px">🔊 أعد الاستماع</button></div>`;
+  const said = r.spoken || r.feed;
+  $('replay').onclick=()=>speak(said,'robot');
+  $('robotSay').textContent='هكذا تصل الرسالة نفسها… دون أن تجرح 💚';
+  tBusy=false; $('goT').disabled=false; relay('المحوِّل',r.feed);
+  speak(said,'robot');
+}
+
+/* ================= MODE 2: Khalid ================= */
+const K={started:false,mood:22,hist:[],busy:false};
+const FEEL=(m)=> m<25?'دفاعي':m<45?'متحفظ':m<60?'متردد':m<80?'منفتح':'متقبّل';
+function setMood(m){ K.mood=Math.max(0,Math.min(100,Math.round(m))); $('knob').style.right=(100-K.mood)+'%'; $('moodTxt').textContent=FEEL(K.mood); setBrows(K.mood); }
+function addMsg(who,text,sig){
+  const d=document.createElement('div'); d.className='msg '+(who==='k'?'k':'c');
+  d.innerHTML=`<span class="who">${who==='k'?'أ. خالد':'المنسق'}</span>${esc(text)}${sig?`<br><span class="sig">✓ ${esc(sig)}</span>`:''}`;
+  $('chat').appendChild(d); $('chat').scrollTop=1e6;
+  $('turns').textContent='(' + K.hist.filter(h=>h.who==='c').length + ' مداخلات)';
+  return d;
+}
+function startKhalid(){
+  K.started=true; K.hist=[]; $('chat').innerHTML=''; setMood(22);
+  const first='هلا أستاذ… تفضّل. سمعت إنك تبي تكلمني عن حصة اليوم؟';
+  K.hist.push({who:'k',text:first}); addMsg('k',first);
+  $('turns').textContent='';
+}
+const transcript=()=>K.hist.map(h=>(h.who==='k'?'خالد: ':'المنسق: ')+h.text).join('\n');
+const K_PROMPT=()=>`أنت تمثّل دور «أ. خالد»، معلم قطري خبرته 12 عامًا، مخلص ومجتهد لكنه حساس تجاه النقد ويدافع عن نفسه في البداية. الموقف: زاره منسق المادة اليوم في حصة ولاحظ أن الطلبة لم يتفاعلوا. من يحادثك هو المنسق (عضو في لجنة تدريبية يتدرّب على التغذية الراجعة).
+طريقة الرد: جملة أو جملتان قصيرتان (لا تزيد عن 30 كلمة) بلهجة خليجية قطرية مهذبة ومبسطة يفهمها الجميع، طبيعية تصلح للنطق، بلا رموز.
+السلوك:
+- إن استخدم المنسق أحكامًا عامة أو لومًا أو مقارنة أو أوامر ← ازدد دفاعية وبرّر (الصف صعب، المنهج طويل، الوقت ضيق، الطلاب مستواهم ضعيف...).
+- إن أظهر تقديرًا صادقًا وتعاطفًا، ووصف سلوكًا محددًا، وفصل السلوك عن شخصك، وسألك عن رأيك، واقترح خطوة عملية مع عرض المساعدة ← لِن تدريجيًا حتى تتقبل وتشكره.
+- لا تلِن بسرعة غير واقعية، ولا تخرج عن الدور، ولا تذكر أنك ذكاء اصطناعي.
+مؤشر تقبّلك الحالي: ${K.mood} من 100.
+المحادثة حتى الآن:
+${transcript()}
+أعد JSON فقط دون أي نص آخر:
+{"reply":"رد خالد","mood":رقم من 0 إلى 100 يمثل تقبّلك بعد آخر جملة للمنسق,"signal":"كلمتان أو ثلاث: ما الذي أثّر فيك (إيجابًا أو سلبًا) في آخر جملة للمنسق"}`;
+
+const POS=/(أقدر|اقدر|أقدّر|شكر|يعطيك العافية|جهد|مجهود|أعجبني|عجبني|لاحظت|لاحظتُ|ما رأيك|وش رايك|ايش رايك|شو رايك|رأيك|نتعاون|أساعد|اساعد|مساعدة|معك|سوا|سويا|معًا|معا|أفهم|افهم|طبيعي|صعب عليك|نجرب|نجرّب|خطوة|اقتراح|ممكن نجرب|تحب)/g;
+const NEG=/(غير جيد|سيء|سيئ|فاشل|فوضى|ما تعرف|لا تعرف|مستواك|ضعيف|لازم|يجب عليك|عليك أن|راجع نفسك|أسوأ|ما سيطرت|ما تقدر|دايم|دائما)/g;
+/* ===== smarter offline Khalid: understands intent and answers what was said ===== */
+const IN={
+  greet:/(السلام|مرحب|هلا|صباح|مساء|كيف حالك|شلونك|كيفك)/,
+  praise:/(أقدر|اقدر|أقدّر|أشكر|اشكر|شكرا|شكرًا|يعطيك العافية|جهد|مجهود|أعجبني|اعجبني|عجبني|ممتاز|رائع|متميز|حلو|مبدع|واضح)/,
+  empathy:/(أفهم|افهم|أدري|ادري|أعرف أن|اعرف ان|صعب|ضغط|ظروف|طبيعي|متعب|تعب|أحس فيك|احس فيك|مقدّر|مقدر)/,
+  observe:/(لاحظت|لاحظتُ|شفت|رأيت|في الدقيقة|أثناء|عندما|حين|في النشاط|في بداية|في نهاية|في الحصة|خلال)/,
+  judge:/(غير جيد|مو زين|سيء|سيئ|ضعيف|فاشل|فوضى|فوضوي|ما تعرف|لا تعرف|مستواك|لازم|يجب|عليك أن|راجع نفسك|أسوأ|ما سيطرت|مقصر|تقصير|دايم|دائما|دائمًا|كل مرة|ما عندك)/,
+  compare:/(زملائك|زملاءك|غيرك|المعلم الثاني|باقي المعلمين|فلان)/,
+  ask:/(رأيك|رايك|تشوف|تتوقع|السبب|ليش|لماذا|كيف تشوف|تقترح|تحب|ودك|هل )/,
+  propose:/(نجرب|نجرّب|جرب|جرّب|اقتراح|أقترح|اقترح|استراتيجي|خطوة|مجموع|تعاوني|أسئلة مفتوحة|اسئلة مفتوحة|فكر|فكّر|زاوج|أدوار|ادوار|تمايز|نشاط|لعب|تقنية|مسابقة)/,
+  help:/(أساعد|اساعد|مساعدة|معك|سوا|سويا|سويًا|معًا|معا|نصمم|نخطط|أحضر|احضر|نجلس|أنا موجود|انا موجود|ندعمك|أدعمك)/,
+  students:/(الطلاب|الطلبة|التفاعل|يتفاعل|المشاركة|يشارك|انتباه|منتبه)/,
+  close:/(اتفقنا|مع السلامة|نلتقي|نشوفك|الله يوفقك|بالتوفيق)/
+};
+const STRAT=[[/تعاوني|مجموع/,'المجموعات التعاونية'],[/فكر|فكّر|زاوج/,'فكّر، زاوج، شارك'],[/أسئلة مفتوحة|اسئلة مفتوحة/,'الأسئلة المفتوحة'],[/أدوار|ادوار/,'توزيع الأدوار'],[/تمايز/,'التعليم المتمايز'],[/لعب|مسابقة/,'التعلم باللعب'],[/تقنية/,'التقنية']];
+const USED=new Set();
+const PROP_STRONG=/(نجرب|نجرّب|جرب|جرّب|أقترح|اقترح|اقتراح|خطوة|نطبق|نستخدم)/;
+const pickR=(arr)=>{ const f=arr.filter(x=>!USED.has(x)); const r=(f.length?f:arr)[Math.floor(Math.random()*(f.length?f.length:arr.length))]; USED.add(r); return r; };
+function offlineKhalid(text){
+  const t=text; const has={}; for(const k in IN) has[k]=IN[k].test(t);
+  const strat=(STRAT.find(([rx])=>rx.test(t))||[])[1];
+  const negWord=(t.match(IN.judge)||[])[0];
+  let d=0; const pos=[], neg=[];
+  if(has.praise){d+=8;pos.push('تقدير');} if(has.empathy){d+=10;pos.push('تعاطف');} if(has.observe){d+=7;pos.push('ملاحظة محددة');}
+  if(has.ask){d+=8;pos.push('سؤال عن رأيه');} if(has.propose){d+=6;pos.push('اقتراح عملي');} if(has.help){d+=10;pos.push('عرض مساعدة');}
+  if(has.judge){d-=15;neg.push('حكم عام');} if(has.compare){d-=12;neg.push('مقارنة بالآخرين');}
+  if(!pos.length && !neg.length) d-=2;
+  const mood=Math.max(5,Math.min(97,K.mood+d));
+  let reply;
+  if(has.judge||has.compare){
+    reply = has.compare ? pickR(['يعني الحين تقارني بغيري؟ كل صف له ظروفه يا أستاذ.','الزملاء صفوفهم غير، لا تحطني معهم في نفس الكفة.'])
+      : pickR([`«${negWord}»؟ يا أستاذ أنا أشتغل من سنين، والصف هذا صعب.`,`أحس إنك حاكم عليّ من حصة وحدة… «${negWord}» كلمة قاسية.`,'يعني كل اللي سويته ما شفت منه شي؟ الوقت ضيق والمنهج طويل.']);
+  } else if(has.close && mood>=60){
+    reply=pickR(['اتفقنا أستاذ، ومشكور على أسلوبك. أحس إني طالع بفكرة واضحة.','إن شاء الله، وأنا بعد ممتن لك. نتابع سوا الأسبوع الياي.']);
+  } else if(has.ask && !PROP_STRONG.test(t) && !has.help){
+    reply = mood<40 ? pickR(['برأيي المشكلة في الطلاب نفسهم، هالدفعة مستواها ضعيف.','السبب واضح: الحصة متأخرة واليوم طويل عليهم.'])
+      : mood<70 ? pickR(['يمكن… لأني كنت أنا اللي أتكلم أغلب الوقت. ما عطيتهم فرصة كافية.','صراحة؟ يمكن الأسئلة كانت كلها مني ومباشرة.'])
+      : pickR(['أحس إني أحتاج أنوّع، بس ما أدري من وين أبدأ.','لو تعطيني فكرة عملية أبدأ فيها، أكون شاكر لك.']);
+  } else if((has.propose||has.help) && mood>=70){
+    reply = strat ? pickR([`${strat}؟ والله فكرة حلوة، خلنا نجربها الحصة الياية… ومتى نجلس نرتبها؟`,`زين، ${strat} ممكن تحرك الطلاب. بس تساعدني في التحضير أول مرة؟`])
+      : pickR(['تمام، أنا مستعد نجرب. متى نجلس نرتبها سوا؟','مشكور أستاذ، أحس إنك فاهمني. خلنا نصممها سوا.']);
+  } else if(has.propose){
+    reply = mood<40 ? pickR([`${strat||'الفكرة'} حلوة على الورق… بس مع ثلاثين طالب ومنهج طويل متى أطبقها؟`,'كل يوم اقتراح جديد… وأنا متى ألحق؟'])
+      : pickR([`${strat||'هالفكرة'}؟ ممكن… بس كيف أطبقها بدون ما يضيع وقت الحصة؟`,'طيب، وش أول خطوة تقترحها بالضبط؟']);
+  } else if(has.ask){
+    reply = mood<40 ? pickR(['برأيي المشكلة في الطلاب نفسهم، هالدفعة مستواها ضعيف.','السبب واضح: الحصة متأخرة واليوم طويل عليهم.'])
+      : mood<70 ? pickR(['يمكن… لأني كنت أنا اللي أتكلم أغلب الوقت. ما عطيتهم فرصة كافية.','صراحة؟ يمكن الأسئلة كانت كلها مني ومباشرة.'])
+      : pickR(['أحس إني أحتاج أنوّع، بس ما أدري من وين أبدأ.','لو تعطيني فكرة عملية أبدأ فيها، أكون شاكر لك.']);
+  } else if(has.observe && has.students){
+    reply = mood<45 ? pickR(['إي لاحظت إنهم ساكتين… بس هذا طبعهم من بداية السنة.','صح ما تفاعلوا، بس الدرس نفسه جاف.'])
+      : pickR(['صح كلامك، أنا بعد حسيت إنهم ساكتين أكثر من العادة.','معك حق، المشاركة كانت من كم طالب بس.']);
+  } else if(has.observe){
+    reply = mood<45 ? pickR(['ممكن… بس هذي ملاحظة بسيطة، ما أظنها تفرق.','لاحظتها يعني؟ زين، بس الظروف ما ساعدتني.']) : pickR(['صحيح، ما انتبهت لها وقتها.','ملاحظة في محلها، شكرًا إنك وضحتها.']);
+  } else if(has.empathy||has.praise){
+    reply = mood<50 ? pickR(['مشكور… والله الصف هذا متعب، أحمد ربي إن أحد حاس فيني.','الله يعطيك العافية… بصراحة كنت متوقع تبدأ بالانتقاد.']) : pickR(['تسلم، كلامك يريحني. قول اللي عندك وأنا أسمعك.','مشكور على التقدير، هذا يشجعني أسمع ملاحظاتك.']);
+  } else if(has.greet){
+    reply=pickR(['وعليكم السلام أستاذ، تفضّل… سمعت إنك تبي تكلمني عن الحصة.','هلا والله… خير إن شاء الله؟']);
+  } else {
+    reply = mood<40 ? pickR(['ما فهمت وش تقصد بالضبط… وضّح لي.','يعني وش المطلوب مني الحين؟']) : pickR(['إي… كمّل، أسمعك.','طيب، وش اللي تقترحه؟']);
+  }
+  return {reply, mood, signal: neg.length?neg.join(' + '):(pos.length?pos.join(' + '):'كلام عام')};
+}
+const micK = makeMic($('micK'), $('coord'), ()=>{ if($('coord').value.trim()) sendK(); }, 'kA');
+$('sendK').onclick=()=>sendK();
+$('coord').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendK(); } });
+async function sendK(){
+  const text=$('coord').value.trim(); if(!text||K.busy) return;
+  K.busy=true; $('sendK').disabled=true; $('micK').disabled=true; $('coord').value='';
+  K.hist.push({who:'c',text}); const cm=addMsg('c',text);
+  const wait=document.createElement('div'); wait.className='msg k'; wait.innerHTML='<span class="who">أ. خالد</span><div class="typing"><i></i><i></i><i></i></div>'; $('chat').appendChild(wait); $('chat').scrollTop=1e6;
+  let r;
+  try{ r=await ask(K_PROMPT(), {kind:'khalid', data:{mood:K.mood, hist:K.hist}}); if(!r||!r.reply) throw new Error('bad'); }
+  catch(e){ r=offlineKhalid(text); }
+  wait.remove();
+  if(r.signal){ const s=document.createElement('span'); s.className='sig'; s.textContent='↩ '+r.signal; cm.appendChild(document.createElement('br')); cm.appendChild(s); }
+  K.hist.push({who:'k',text:r.reply}); addMsg('k',r.reply); relay('أ. خالد',r.reply);
+  setMood(typeof r.mood==='number'?r.mood:K.mood);
+  K.busy=false; $('sendK').disabled=false;
+  const guard=setTimeout(()=>{ $('micK').disabled=false; }, 12000);
+  await speak(r.reply,'khalid'); clearTimeout(guard); $('micK').disabled=false;
+}
+$('resetK').onclick=$('newK').onclick=()=>{ $('evalOv').classList.remove('show'); startKhalid(); };
+$('closeEval').onclick=()=>$('evalOv').classList.remove('show');
+
+const E_PROMPT=()=>`أنت مدرب خبير في القيادة التربوية والذكاء العاطفي. قيّم أداء «المنسق» في حوار التغذية الراجعة التالي مع معلم دفاعي اسمه خالد. كن عادلًا وصارمًا: الحوار القصير جدًا أو الخالي من خطوة عملية يحصل على درجات منخفضة.
+المحادثة:
+${transcript()}
+أعد JSON فقط دون أي نص آخر:
+{"criteria":[{"name":"التعاطف والتقدير","score":رقم 0-10,"note":"جملة قصيرة"},{"name":"تحديد السلوك بدقة","score":0-10,"note":"…"},{"name":"فصل السلوك عن الشخص","score":0-10,"note":"…"},{"name":"الخطوة العملية وعرض المساعدة","score":0-10,"note":"…"}],"overall":رقم من 10 بخانة عشرية واحدة,"strength":"جملة واحدة عن أبرز نقطة قوة","advice":"نصيحة واحدة عملية","verdict":"جملتان قصيرتان بلهجة خليجية قطرية مهذبة تُقرآن بصوت عالٍ تلخصان التقييم والدرجة"}`;
+function offlineEval(){
+  const turns=K.hist.filter(h=>h.who==='c').map(h=>h.text); const c=turns.join(' ');
+  const cnt=(rx)=>turns.filter(t=>rx.test(t)).length;
+  const cl=(v)=>Math.max(1,Math.min(10,Math.round(v)));
+  const j=cnt(IN.judge)+cnt(IN.compare);
+  const em=cl(3+cnt(IN.praise)*2+cnt(IN.empathy)*2.5-j*2);
+  const sp=cl(2+cnt(IN.observe)*3+(IN.students.test(c)?1:0)-j);
+  const sep=cl(8-j*2.5+(cnt(IN.ask)?1:0));
+  const st=cl(2+cnt(IN.propose)*2.5+cnt(IN.help)*2.5);
+  const overall=Math.round((em+sp+sep+st)/4*10)/10;
+  const names=[['التعاطف والتقدير',em],['تحديد السلوك بدقة',sp],['فصل السلوك عن الشخص',sep],['الخطوة العملية وعرض المساعدة',st]];
+  const best=names.slice().sort((a,b)=>b[1]-a[1])[0][0], worst=names.slice().sort((a,b)=>a[1]-b[1])[0][0];
+  const tips={'التعاطف والتقدير':'ابدأ بتقدير حقيقي لجهد المعلم قبل أي ملاحظة.','تحديد السلوك بدقة':'صف ما رأيته بالتحديد: متى وأين وماذا حدث، دون أحكام عامة.','فصل السلوك عن الشخص':'تجنب كلمات الحكم مثل «غير جيد» و«لازم»، وتحدث عن الموقف لا عن المعلم.','الخطوة العملية وعرض المساعدة':'اختم باقتراح عملي واحد واعرض أن تساعده فيه.'};
+  return {criteria:names.map(([name,score])=>({name,score,note:''})),overall,strength:`أبرز ما ظهر في حوارك: ${best}.`,advice:tips[worst],verdict:`درجتك ${overall} من عشرة. أقوى جانب عندك ${best}، وركّز المرة الياية على ${worst}.`};
+}
+$('endK').onclick=async()=>{
+  if(K.hist.filter(h=>h.who==='c').length===0){ toast('ابدأ الحوار مع أ. خالد أولًا'); return; }
+  $('endK').disabled=true; $('endK').textContent='⏳ جارٍ التقييم…';
+  let r, offline=false;
+  try{ r=await ask(E_PROMPT(), {kind:'eval', data:{hist:K.hist}}); if(!r||!r.criteria) throw new Error('bad'); }catch(e){ r=offlineEval(); offline=true; }
+  $('endK').disabled=false; $('endK').textContent='🏁 إنهاء وتقييم';
+  K.ai = Number(r.overall)||0;
+  $('evalMode').textContent = offline?'(تقييم احتياطي تقريبي)':'';
+  $('crit').innerHTML = r.criteria.map(c=>`<div class="c"><div class="t"><span>${esc(c.name)}</span><span>${esc(c.score)}/10</span></div><div class="b"><i data-w="${Math.max(0,Math.min(10,+c.score))*10}"></i></div><div class="n">${esc(c.note||'')}</div></div>`).join('');
+  $('strength').textContent=r.strength||''; $('advice').textContent=r.advice||''; $('cmp').innerHTML='';
+  $('ringTxt').textContent='0'; $('ringArc').style.strokeDashoffset=314;
+  $('evalOv').classList.add('show');
+  requestAnimationFrame(()=>setTimeout(()=>{
+    document.querySelectorAll('#crit .b i').forEach(i=>i.style.width=i.dataset.w+'%');
+    $('ringArc').style.strokeDashoffset = 314 - 314*Math.min(10,K.ai)/10;
+    let v=0; const tgt=K.ai; const iv=setInterval(()=>{ v=Math.min(tgt, v+tgt/30); $('ringTxt').textContent=v.toFixed(1); if(v>=tgt) clearInterval(iv); },40);
+  },60));
+  speak(r.verdict || ('درجتك '+K.ai+' من عشرة. '+(r.advice||'')), 'robot');
+};
+$('cmpBtn').onclick=()=>{
+  const vals=[...document.querySelectorAll('.obs input')].map(i=>parseFloat(i.value)).filter(v=>!isNaN(v)&&v>=0&&v<=10);
+  if(!vals.length){ toast('أدخل درجة مراقب واحد على الأقل'); return; }
+  const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10, ai=K.ai||0, diff=Math.abs(avg-ai).toFixed(1);
+  const msg = diff<=1 ? 'تقارب كبير بين تقييم الإنسان والآلة 👏' : diff<=2.5 ? 'تقارب متوسط… ما الذي رآه المراقبون ولم تره الآلة؟' : 'اختلاف واضح… هنا تظهر قيمة الحكم الإنساني!';
+  $('cmp').innerHTML=`<div class="r"><span>🤖 الذكاء الاصطناعي</span><div class="b"><i style="background:var(--teal)" data-w="${ai*10}"></i></div><span>${ai}</span></div>
+   <div class="r"><span>👥 المراقبون (${vals.length})</span><div class="b"><i style="background:var(--m)" data-w="${avg*10}"></i></div><span>${avg}</span></div>
+   <div style="font-weight:800;color:var(--navy);margin-top:6px">الفرق: ${diff} — ${msg}</div>`;
+  setTimeout(()=>document.querySelectorAll('#cmp .b i').forEach(i=>i.style.width=i.dataset.w+'%'),50);
+};
+
+/* ================= phone wireless mic (room) ================= */
+let PMODE='khalid';
+function initRoom(){
+  ROOM.on('say', (msg)=>{
+    if(msg.sameTab || location.hash==='#mic') return;
+    const d=msg.data||{}; const text=String(d.text||'').slice(0,1200).trim(); if(!text) return;
+    $('qrOv').classList.remove('show');
+    if(d.mode==='transform'){ go('transform'); $('critique').value=text; transform(); }
+    else { go('khalid'); $('coord').value=text; sendK(); }
+    toast('📱 وصلت رسالة من الهاتف');
+  }, ()=>{});
+  ROOM.on('heard', (msg)=>{ if(location.hash==='#mic'){ const d=msg.data||{}; $('pmLast').textContent = d.who ? (d.who+': '+String(d.text||'').slice(0,300)) : ''; } }, ()=>{});
+  ROOM.onPeers((ch)=>{
+    const others=ch.peers.filter(p=>!p.sameTab);
+    const screens=others.map(p=>p.presence&&p.presence.screen).filter(Boolean);
+    if(location.hash==='#mic'){
+      $('pmStatus').textContent = screens.length ? '✅ متصل بشاشة العرض' : '⏳ افتح المختبر على جهاز العرض…';
+      const sc=screens[0]; if(sc==='transform'||sc==='khalid') setPMode(sc);
+    } else {
+      const phones=others.filter(p=>p.presence&&p.presence.screen==='mic').length;
+      $('peerInfo').textContent = phones ? '✅ هاتف متصل' : 'بانتظار اتصال الهاتف…';
+    }
+  }, ()=>{});
+  if(location.hash==='#mic') ROOM.presence({screen:'mic'}).catch(()=>{});
+  else ROOM.presence({screen:(location.hash.slice(1)||'home')}).catch(()=>{});
+  showCaps();
+}
+function setPMode(m){ PMODE=m; document.querySelectorAll('.modeBtn').forEach(b=>b.className='go modeBtn '+(b.dataset.mode===m?'m':'ghost')); }
+document.querySelectorAll('.modeBtn').forEach(b=>b.onclick=()=>setPMode(b.dataset.mode));
+$('phoneSend').onclick=async()=>{
+  const text=$('phoneTxt').value.trim(); if(!text){ toast('تحدث أو اكتب أولًا'); return; }
+  if(!ROOM){ toast('تعذّر الاتصال – تأكد من تسجيل الدخول في Claude'); return; }
+  try{ await ROOM.emit('say',{mode:PMODE,text}); $('phoneTxt').value=''; toast('📡 أُرسلت إلى الشاشة'); $('pmLast').textContent='أنت: '+text; }
+  catch(e){ toast('تعذّر الإرسال ('+(e&&e.code||'?')+')',4000); }
+};
+$('phoneBtn').onclick=()=>{
+  $('qrBox').innerHTML='';
+  try{ new QRCode($('qrBox'),{text:APP_URL,width:240,height:240,colorDark:'#5E0E29',colorLight:'#ffffff'}); }
+  catch(e){ $('qrBox').textContent=APP_URL; }
+  $('peerInfo').textContent = ROOM ? 'بانتظار اتصال الهاتف…' : '⚠️ ميزة الاتصال غير متاحة في هذه الصفحة';
+  $('qrOv').classList.add('show');
+};
+$('qrClose').onclick=()=>$('qrOv').classList.remove('show');
+const micP = makeMic($('micP'), $('phoneTxt'), null, 'rA');
+setTimeout(()=>{ if(DICT) $('micP').style.display='grid'; }, 2500);
+function relay(who,text){ if(ROOM) ROOM.emit('heard',{who,text:String(text).slice(0,600)}).catch(()=>{}); }
+
+$('voiceBtn').onclick=()=>{ fillVoiceUI(); $('vOv').classList.add('show'); };
+$('vClose').onclick=()=>$('vOv').classList.remove('show');
+$('apiKey').value=API_KEY; $('apiModel').value=API_MODEL;
+$('keySave').onclick=async()=>{
+  API_KEY=$('apiKey').value.trim(); API_MODEL=$('apiModel').value;
+  try{ localStorage.setItem('anthropicKey',API_KEY); localStorage.setItem('anthropicModel',API_MODEL); }catch(e){}
+  if(!API_KEY){ $('keyMsg').textContent=''; setAI(!!SAMPLE); return; }
+  $('keyMsg').textContent='⏳ جارٍ الاختبار…';
+  try{ const r=await callAPI('أعد JSON فقط: {"ok":true}',50); $('keyMsg').textContent = r&&r.ok?'✅ يعمل':'✅ متصل'; setAI(true); }
+  catch(e){ $('keyMsg').textContent='❌ '+e.message; }
+};
+$('keyClear').onclick=()=>{ API_KEY=''; $('apiKey').value=''; try{localStorage.removeItem('anthropicKey');}catch(e){} $('keyMsg').textContent='تم المسح'; setAI(!!SAMPLE); };
+if(SAMPLE===null && API_KEY) setAI('key');
+['khalid','robot'].forEach(who=>{ $('vs-'+who).onchange=(e)=>{ VOICE_PREF[who]=e.target.value; try{localStorage.setItem('voicePref',JSON.stringify(VOICE_PREF));}catch(_){} }; });
+document.querySelectorAll('[data-test]').forEach(b=>b.onclick=()=>{ const who=b.dataset.test;
+  speak(who==='khalid'?'هلا والله أستاذ، تفضّل… أنا أسمعك. وش اللي لاحظته في الحصة اليوم؟':'مرحبا، أنا المحوِّل الذكي. عطني الملاحظة، وأنا أساعدك تقولها بطريقة تبني وما تجرح.', who); });
+
+/* start */
+setBrows(22);
+const NARROW = window.matchMedia('(max-width: 760px)').matches;
+go(NARROW && !['transform','khalid'].includes(location.hash.slice(1)) ? 'mic' : (location.hash.slice(1)||'home'));
+setTimeout(()=>{ if(document.body.classList.contains('phone') && !ROOM){
+  $('pmStatus').innerHTML='⚠️ تعذّر الاتصال بشاشة العرض من هنا.<br>افتح هذا الرابط في <b>متصفح الهاتف</b> (Safari أو Chrome) بعد تسجيل الدخول في claude.ai:<br><span style="direction:ltr;display:inline-block;font-size:13px">'+APP_URL+'</span>';
+} }, 11500);
+</script>
+</body>
+</html>
