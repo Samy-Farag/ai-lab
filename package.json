@@ -4,5 +4,5 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": { "build": "echo ready" },
-  "dependencies": { "@netlify/blobs": "^11.1.10" }
+  "dependencies": { "@netlify/blobs": "8.2.0" }
 }
