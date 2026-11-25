@@ -575,7 +575,7 @@ async function callAPI(prompt, maxTok=800, temp=0.9){
   const j=await r.json(); return parseJSON((j.content||[]).map(c=>c.text||'').join(''));
 }
 /* site server (Netlify Function): the API key stays on the server, never in the page */
-const SERVER_URL='/.netlify/functions/claude';
+const SERVER_URL='/?api=claude';
 var SERVER=false;
 async function askServer(srv){
   const r=await fetch(SERVER_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(srv)});
