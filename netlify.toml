@@ -5,3 +5,33 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Root-path aliases: some school filters block individual paths on netlify.app
+# but allow the site root, so every page and API is also reachable as "/?x=...".
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/claude"
+  status = 200
+  force = true
+  query = {api = "claude"}
+
+[[redirects]]
+  from = "/"
+  to = "/.netlify/functions/results"
+  status = 200
+  force = true
+  query = {api = "results"}
+
+[[redirects]]
+  from = "/"
+  to = "/eisenhower.html"
+  status = 200
+  force = true
+  query = {act = ":act"}
+
+[[redirects]]
+  from = "/"
+  to = "/board.html"
+  status = 200
+  force = true
+  query = {board = ":board"}

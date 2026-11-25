@@ -196,8 +196,8 @@ function startTimer(){ if(started) return; started=true; iv=setInterval(()=>{ T-
 document.addEventListener('pointerdown',startTimer,{once:true});
 $('#qrBtn').onclick=()=>{
   if(!/^https?:/.test(location.protocol)){ toast('رمز QR يعمل بعد رفع الصفحة على الإنترنت (Netlify)'); return; }
-  $('#qrBox').innerHTML=''; try{ new QRCode($('#qrBox'),{text:location.origin+location.pathname+'?s='+SESS,width:260,height:260,colorDark:'#5E0E29'}); }catch(e){}
-  $('#qrUrl').textContent=location.origin+location.pathname+'?s='+SESS; $('#qr').classList.add('show');
+  $('#qrBox').innerHTML=''; try{ new QRCode($('#qrBox'),{text:location.origin+'/?act=1&s='+SESS,width:260,height:260,colorDark:'#5E0E29'}); }catch(e){}
+  $('#qrUrl').textContent=location.origin+'/?act=1&s='+SESS; $('#qr').classList.add('show');
 };
 $('#qrClose').onclick=()=>$('#qr').classList.remove('show');
 /* ===== live results (Netlify Function + Blobs) ===== */
@@ -211,7 +211,7 @@ function placements(){ const pl={}; document.querySelectorAll('.zone .card').for
 async function submit(feed){
   if(!LIVE) return;
   try{
-    const r=await fetch('/.netlify/functions/results',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'submit',s:SESS,id:MYID,name:$('#who').value.trim()||'عضو',place:placements(),score:lastScore,feed:feed||''})});
+    const r=await fetch('/?api=results',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'submit',s:SESS,id:MYID,name:$('#who').value.trim()||'عضو',place:placements(),score:lastScore,feed:feed||''})});
     const n=$('#net'); n.style.display=''; n.textContent = r.ok ? '📡 وصلت إجابتك إلى لوحة النتائج' : '⚠️ تعذّر الإرسال للوحة'; 
   }catch(e){ const n=$('#net'); n.style.display=''; n.textContent='⚠️ تعذّر الإرسال للوحة'; }
 }
